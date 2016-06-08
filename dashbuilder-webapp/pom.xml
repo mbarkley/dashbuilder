@@ -24,8 +24,24 @@
     <gwt.compiler.localWorkers>4</gwt.compiler.localWorkers>
   </properties>
 
+  <dependencyManagement>
+    <!-- TODO: Figure out where this should go. -->
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-api</artifactId>
+        <version>3.3.6.Final</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <!-- NOTE: GWT client deps are needed for GWT compilation purposes (scope=provided) -->
   <dependencies>
+
+    <dependency>
+      <groupId>org.jboss.xnio</groupId>
+      <artifactId>xnio-api</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.jboss.spec.javax.annotation</groupId>
