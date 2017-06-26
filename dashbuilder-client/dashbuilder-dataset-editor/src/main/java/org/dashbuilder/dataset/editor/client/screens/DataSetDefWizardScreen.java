@@ -36,7 +36,6 @@ import org.jboss.errai.bus.client.api.messaging.Message;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.ErrorCallback;
 import org.jboss.errai.common.client.api.RemoteCallback;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.uberfire.backend.vfs.Path;
 import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartView;
@@ -64,7 +63,6 @@ import static org.uberfire.commons.validation.PortablePreconditions.checkNotNull
 @Dependent
 public class DataSetDefWizardScreen {
 
-    SyncBeanManager beanManager;
     DataSetEditorWorkflowFactory workflowFactory;
     Caller<DataSetDefVfsServices> services;
     DataSetClientServices clientServices;
@@ -79,8 +77,7 @@ public class DataSetDefWizardScreen {
     SavePopUpPresenter savePopUpPresenter;
 
     @Inject
-    public DataSetDefWizardScreen( final SyncBeanManager beanManager,
-                                   final DataSetEditorWorkflowFactory workflowFactory,
+    public DataSetDefWizardScreen( final DataSetEditorWorkflowFactory workflowFactory,
                                    final Caller<DataSetDefVfsServices> services,
                                    final DataSetClientServices clientServices,
                                    final Event<NotificationEvent> notification,
@@ -88,7 +85,6 @@ public class DataSetDefWizardScreen {
                                    final ErrorPopupPresenter errorPopupPresenter,
                                    final SavePopUpPresenter savePopUpPresenter,
                                    final DataSetDefScreenView view ) {
-        this.beanManager = beanManager;
         this.workflowFactory = workflowFactory;
         this.services = services;
         this.clientServices = clientServices;

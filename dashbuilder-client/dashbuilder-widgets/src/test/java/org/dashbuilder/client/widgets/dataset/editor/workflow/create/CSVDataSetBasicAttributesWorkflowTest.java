@@ -3,6 +3,7 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.create;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBasicAttributesEditor;
 import org.dashbuilder.client.widgets.dataset.editor.driver.CSVDataSetDefAttributesDriver;
+import org.dashbuilder.client.widgets.dataset.editor.driver.DataSetDefBasicAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.AbstractDataSetWorkflowTest;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.DataSetEditorWorkflow;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
@@ -11,14 +12,13 @@ import org.dashbuilder.client.widgets.dataset.event.TestDataSetRequestEvent;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.CSVDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.*;
@@ -26,8 +26,6 @@ import static org.mockito.Mockito.*;
 @RunWith( GwtMockitoTestRunner.class )
 public class CSVDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -44,6 +42,12 @@ public class CSVDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkfl
     org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetDefAttributesEditor csvDataSetDefAttributesEditor;
     @Mock
     DataSetEditorWorkflow.View view;
+    @Mock
+    ManagedInstance<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider;
+    @Mock
+    ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetDefAttributesEditor> editorProvider;
+    @Mock
+    ManagedInstance<CSVDataSetDefAttributesDriver> driverProvider;
 
     private CSVDataSetBasicAttributesWorkflow presenter;
 
@@ -53,25 +57,16 @@ public class CSVDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkfl
 
         presenter = new CSVDataSetBasicAttributesWorkflow( clientServices,
                                                            validatorProvider,
-                                                           beanManager,
                                                            basicAttributesEditor,
                                                            saveRequestEvent,
                                                            testDataSetEvent,
                                                            cancelRequestEvent,
+                                                           basicAttributesDriverProvider,
+                                                           driverProvider,
+                                                           editorProvider,
                                                            view );
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.CSV );
 
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( CSVDataSetDefAttributesDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetDefAttributesEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

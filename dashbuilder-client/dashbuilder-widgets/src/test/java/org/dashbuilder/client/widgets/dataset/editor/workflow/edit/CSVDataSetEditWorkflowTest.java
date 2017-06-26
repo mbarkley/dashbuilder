@@ -14,21 +14,19 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.CSVDataSetDefEditor;
 import org.dashbuilder.dataset.client.editor.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.dataset.def.CSVDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import javax.enterprise.inject.Instance;
 
 @RunWith( GwtMockitoTestRunner.class )
 public class CSVDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -49,28 +47,27 @@ public class CSVDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     CSVDataSetDef dataSetDef;
     @Mock
     DataSetDefRefreshAttributesEditor refreshEditor;
+    @Mock
+    Instance<CSVDataSetDefDriver> driverProvider;
+    @Mock
+    Instance<org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetEditor> editorProvider;
 
     private CSVDataSetEditWorkflow presenter;
 
     @Before
     public void setup() throws Exception {
         super.setup();
-        presenter = new CSVDataSetEditWorkflow( clientServices, validatorProvider, beanManager,
-                                                saveRequestEvent, testDataSetEvent, cancelRequestEvent, view );
+        presenter = new CSVDataSetEditWorkflow(clientServices,
+                                               validatorProvider,
+                                               saveRequestEvent,
+                                               testDataSetEvent,
+                                               cancelRequestEvent,
+                                               driverProvider,
+                                               editorProvider,
+                                               view);
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.CSV );
         when( csvEditor.refreshEditor() ).thenReturn( refreshEditor );
         when( refreshEditor.isRefreshEnabled() ).thenReturn( true );
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( CSVDataSetDefDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

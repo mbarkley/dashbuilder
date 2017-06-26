@@ -1,6 +1,8 @@
 package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import java.util.List;
+
+import javax.enterprise.inject.Instance;
 import javax.validation.ConstraintViolation;
 
 import com.google.gwt.editor.client.SimpleBeanEditorDriver;
@@ -19,8 +21,6 @@ import org.dashbuilder.dataset.client.DataSetReadyCallback;
 import org.dashbuilder.dataset.client.editor.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.dataset.def.DataColumnDef;
 import org.dashbuilder.dataset.def.DataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,8 +43,6 @@ public class DataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     public static final String NAME = "name1";
 
     @Mock
-    SyncBeanManager beanManager;
-    @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
     EventSourceMock<TestDataSetRequestEvent> testDataSetEvent;
@@ -61,13 +59,13 @@ public class DataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     @Mock
     DataSetDefRefreshAttributesEditor refreshEditor;
     @Mock
-    SyncBeanDef<SimpleBeanEditorDriver> simpleBeanEditorDriverSyncBeanDef;
-    @Mock
-    SyncBeanDef<DataSetEditor> dataSetEditorSyncBeanDef;
-    @Mock
     SimpleBeanEditorDriver driver;
     @Mock
     DataSetEditor editor;
+    @Mock
+    Instance<SimpleBeanEditorDriver> driverProvider;
+    @Mock
+    Instance<DataSetEditor> editorProvider;
 
     DataSetEditWorkflow presenter;
 
@@ -82,20 +80,8 @@ public class DataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
         when( editor.refreshEditor() ).thenReturn( refreshEditor );
 
         // Bean instantiation mocks.
-        when( beanManager.lookupBean( SimpleBeanEditorDriver.class ) ).thenReturn( simpleBeanEditorDriverSyncBeanDef );
-        when( simpleBeanEditorDriverSyncBeanDef.newInstance() ).thenAnswer( new Answer<SimpleBeanEditorDriver>() {
-            @Override
-            public SimpleBeanEditorDriver answer( InvocationOnMock invocationOnMock ) throws Throwable {
-                return driver;
-            }
-        } );
-        when( beanManager.lookupBean( DataSetEditor.class ) ).thenReturn( dataSetEditorSyncBeanDef );
-        when( dataSetEditorSyncBeanDef.newInstance() ).thenAnswer( new Answer<DataSetEditor>() {
-            @Override
-            public DataSetEditor answer( InvocationOnMock invocationOnMock ) throws Throwable {
-                return editor;
-            }
-        } );
+        when(driverProvider.get()).thenReturn(driver);
+        when(editorProvider.get()).thenReturn(editor);
 
 
         doAnswer( new Answer<Void>() {
@@ -109,18 +95,14 @@ public class DataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
                                                   any( DataSetLookup.class ),
                                                   any( DataSetReadyCallback.class ) );
 
-        presenter = new DataSetEditWorkflow( clientServices, validatorProvider, beanManager, saveRequestEvent,
-                                             testDataSetEvent, cancelRequestEvent, view ) {
-
-            @Override
-            protected Class<? extends SimpleBeanEditorDriver> getDriverClass() {
-                return SimpleBeanEditorDriver.class;
-            }
-
-            @Override
-            protected Class getEditorClass() {
-                return DataSetEditor.class;
-            }
+        presenter = new DataSetEditWorkflow(clientServices,
+                                            validatorProvider,
+                                            saveRequestEvent,
+                                            testDataSetEvent,
+                                            cancelRequestEvent,
+                                            driverProvider,
+                                            editorProvider,
+                                            view) {
 
             @Override
             protected Iterable<ConstraintViolation<?>> validate( boolean isCacheEnabled,

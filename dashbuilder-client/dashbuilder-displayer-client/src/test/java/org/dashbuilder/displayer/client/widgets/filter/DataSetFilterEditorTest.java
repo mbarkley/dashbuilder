@@ -17,7 +17,6 @@ package org.dashbuilder.displayer.client.widgets.filter;
 import javax.enterprise.event.Event;
 
 import org.dashbuilder.dataset.ColumnType;
-import org.dashbuilder.dataset.DataSetLookupFactory;
 import org.dashbuilder.dataset.DataSetMetadata;
 import org.dashbuilder.dataset.filter.ColumnFilter;
 import org.dashbuilder.dataset.filter.CoreFunctionType;
@@ -25,8 +24,8 @@ import org.dashbuilder.dataset.filter.DataSetFilter;
 import org.dashbuilder.dataset.filter.FilterFactory;
 import org.dashbuilder.displayer.client.events.ColumnFilterDeletedEvent;
 import org.dashbuilder.displayer.client.events.DataSetFilterChangedEvent;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,9 +46,6 @@ public class DataSetFilterEditorTest {
     DataSetFilterEditor.View filterView;
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
     SyncBeanDef<ColumnFilterEditor> columnFilterEditorBeanDef;
 
     @Mock
@@ -58,10 +54,12 @@ public class DataSetFilterEditorTest {
     @Mock
     Event<DataSetFilterChangedEvent> changedEvent;
 
+    @Mock
+    ManagedInstance<ColumnFilterEditor> colFilterEditorProvider;
+
     @Before
     public void setup() {
-        when(beanManager.lookupBean(ColumnFilterEditor.class)).thenReturn(columnFilterEditorBeanDef);
-        when(columnFilterEditorBeanDef.newInstance()).thenReturn(columnFilterEditor);
+        when(colFilterEditorProvider.get()).thenReturn(columnFilterEditor);
         when(metadata.getNumberOfColumns()).thenReturn(3);
         when(metadata.getColumnId(0)).thenReturn("column1");
         when(metadata.getColumnId(1)).thenReturn("column2");
@@ -77,7 +75,7 @@ public class DataSetFilterEditorTest {
         ColumnFilter filter1 = FilterFactory.equalsTo("column1", "Test");
         filter.addFilterColumn(filter1);
 
-        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, beanManager, changedEvent);
+        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, colFilterEditorProvider, changedEvent);
         filterEditor.init(filter, metadata);
 
         assertEquals(filterView, filterEditor.view);
@@ -90,7 +88,7 @@ public class DataSetFilterEditorTest {
 
     @Test
     public void testWorkflow() {
-        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, beanManager, changedEvent);
+        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, colFilterEditorProvider, changedEvent);
         filterEditor.init(null, metadata);
         reset(filterView);
 
@@ -103,7 +101,7 @@ public class DataSetFilterEditorTest {
 
     @Test
     public void testCreateLabelFilter() {
-        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, beanManager, changedEvent);
+        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, colFilterEditorProvider, changedEvent);
         filterEditor.init(null, metadata);
         reset(filterView);
         when(filterView.getSelectedColumnIndex()).thenReturn(0);
@@ -121,7 +119,7 @@ public class DataSetFilterEditorTest {
 
     @Test
     public void testCreateDateFilter() {
-        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, beanManager, changedEvent);
+        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, colFilterEditorProvider, changedEvent);
         filterEditor.init(null, metadata);
         reset(filterView);
         when(filterView.getSelectedColumnIndex()).thenReturn(2);
@@ -150,7 +148,7 @@ public class DataSetFilterEditorTest {
         DataSetFilter filter = new DataSetFilter();
         filter.addFilterColumn(columnFilter1, columnFilter2);
 
-        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, beanManager, changedEvent);
+        DataSetFilterEditor filterEditor = new DataSetFilterEditor(filterView, colFilterEditorProvider, changedEvent);
         filterEditor.init(filter, metadata);
         filterEditor.onColumnFilterDeleted(new ColumnFilterDeletedEvent(columnFilterEditor2));
         filterEditor.onColumnFilterDeleted(new ColumnFilterDeletedEvent(columnFilterEditor1));
@@ -158,8 +156,8 @@ public class DataSetFilterEditorTest {
         assertEquals(filter.getColumnFilterList().size(), 0);
         verify(filterView).removeColumnFilterEditor(columnFilterEditor1);
         verify(filterView).removeColumnFilterEditor(columnFilterEditor2);
-        verify(beanManager).destroyBean(columnFilterEditor1);
-        verify(beanManager).destroyBean(columnFilterEditor2);
+        verify(colFilterEditorProvider).destroy(columnFilterEditor1);
+        verify(colFilterEditorProvider).destroy(columnFilterEditor2);
         verify(changedEvent, times(2)).fire(any(DataSetFilterChangedEvent.class));
     }
 }

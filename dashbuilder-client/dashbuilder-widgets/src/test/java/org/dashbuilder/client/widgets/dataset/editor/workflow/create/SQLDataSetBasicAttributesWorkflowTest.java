@@ -2,6 +2,7 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.create;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBasicAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.driver.DataSetDefBasicAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.SQLDataSetDefAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.AbstractDataSetWorkflowTest;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.DataSetEditorWorkflow;
@@ -11,14 +12,13 @@ import org.dashbuilder.client.widgets.dataset.event.TestDataSetRequestEvent;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.SQLDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.eq;
@@ -27,8 +27,6 @@ import static org.mockito.Mockito.*;
 @RunWith( GwtMockitoTestRunner.class )
 public class SQLDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -45,6 +43,12 @@ public class SQLDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkfl
     org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetDefAttributesEditor sqlDataSetDefAttributesEditor;
     @Mock
     DataSetEditorWorkflow.View view;
+    @Mock
+    ManagedInstance<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider;
+    @Mock
+    ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetDefAttributesEditor> editorProvider;
+    @Mock
+    ManagedInstance<SQLDataSetDefAttributesDriver> driverProvider;
     private SQLDataSetBasicAttributesWorkflow presenter;
 
     @Before
@@ -53,24 +57,15 @@ public class SQLDataSetBasicAttributesWorkflowTest extends AbstractDataSetWorkfl
 
         presenter = new SQLDataSetBasicAttributesWorkflow( clientServices,
                                                            validatorProvider,
-                                                           beanManager,
                                                            basicAttributesEditor,
                                                            saveRequestEvent,
                                                            testDataSetEvent,
                                                            cancelRequestEvent,
+                                                           basicAttributesDriverProvider,
+                                                           editorProvider,
+                                                           driverProvider,
                                                            view );
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.SQL );
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( SQLDataSetDefAttributesDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetDefAttributesEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

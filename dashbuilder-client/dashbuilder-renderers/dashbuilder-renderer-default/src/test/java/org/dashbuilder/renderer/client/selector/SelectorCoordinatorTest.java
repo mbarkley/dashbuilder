@@ -27,8 +27,7 @@ import org.dashbuilder.displayer.client.DisplayerCoordinator;
 import org.dashbuilder.displayer.client.DisplayerListener;
 import org.dashbuilder.displayer.client.widgets.filter.DateParameterEditor;
 import org.dashbuilder.displayer.client.widgets.filter.NumberParameterEditor;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,9 +108,6 @@ public class SelectorCoordinatorTest extends AbstractDisplayerTest {
     SelectorSliderDisplayer.View sliderView;
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
     DateParameterEditor dateEditor;
 
     @Mock
@@ -124,16 +120,16 @@ public class SelectorCoordinatorTest extends AbstractDisplayerTest {
     SelectorLabelItem labelItem;
 
     @Mock
-    SyncBeanDef<SelectorLabelItem> labelItemBean;
+    ManagedInstance<SelectorLabelItem> selectorLabelItemProvider;
 
     @Mock
-    SyncBeanDef<SelectorDropDownItem> dropDownItemBean;
+    ManagedInstance<SelectorDropDownItem> selectorDropDownItemProvider;
 
     @Mock
     SelectorDropDownItem dropDownItem;
 
     public SelectorLabelSetDisplayer createLabelSetDisplayer(DisplayerSettings settings) {
-        return initDisplayer(new SelectorLabelSetDisplayer(labelSetView, beanManager), settings);
+        return initDisplayer(new SelectorLabelSetDisplayer(labelSetView, selectorLabelItemProvider), settings);
     }
 
     public SelectorSliderDisplayer createSliderDisplayer(DisplayerSettings settings) {
@@ -141,18 +137,15 @@ public class SelectorCoordinatorTest extends AbstractDisplayerTest {
     }
 
     public SelectorDropDownDisplayer createDropDownDisplayer(DisplayerSettings settings) {
-        return initDisplayer(new SelectorDropDownDisplayer(mock(SelectorDropDownDisplayerView.class), beanManager), settings);
+        return initDisplayer(new SelectorDropDownDisplayer(mock(SelectorDropDownDisplayerView.class), selectorDropDownItemProvider), settings);
     }
 
     @Before
     public void init() throws Exception {
         super.init();
 
-        when(beanManager.lookupBean(SelectorLabelItem.class)).thenReturn(labelItemBean);
-        when(labelItemBean.newInstance()).thenReturn(labelItem);
-
-        when(beanManager.lookupBean(SelectorDropDownItem.class)).thenReturn(dropDownItemBean);
-        when(dropDownItemBean.newInstance()).thenReturn(dropDownItem);
+        when(selectorLabelItemProvider.get()).thenReturn(labelItem);
+        when(selectorDropDownItemProvider.get()).thenReturn(dropDownItem);
 
         allRowsDisplayer = createNewDisplayer(allRows);
         dateSliderDisplayer = createSliderDisplayer(dateSlider);

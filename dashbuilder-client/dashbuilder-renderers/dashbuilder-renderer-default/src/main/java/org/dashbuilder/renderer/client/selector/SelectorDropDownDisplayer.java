@@ -34,7 +34,7 @@ import org.dashbuilder.displayer.DisplayerAttributeDef;
 import org.dashbuilder.displayer.DisplayerAttributeGroupDef;
 import org.dashbuilder.displayer.DisplayerConstraints;
 import org.dashbuilder.displayer.client.AbstractErraiDisplayer;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 @Dependent
 public class SelectorDropDownDisplayer extends AbstractErraiDisplayer<SelectorDropDownDisplayer.View> {
@@ -65,13 +65,13 @@ public class SelectorDropDownDisplayer extends AbstractErraiDisplayer<SelectorDr
     protected View view;
     protected boolean filterOn = false;
     protected boolean multipleSelections = false;
-    protected SyncBeanManager beanManager;
     protected Set<SelectorDropDownItem> itemCollection = new HashSet<>();
+    protected ManagedInstance<SelectorDropDownItem> selectorDropDownProvider;
 
     @Inject
-    public SelectorDropDownDisplayer(View view, SyncBeanManager beanManager) {
-        this.beanManager = beanManager;
+    public SelectorDropDownDisplayer(View view, ManagedInstance<SelectorDropDownItem> selectorDropDownProvider) {
         this.view = view;
+        this.selectorDropDownProvider = selectorDropDownProvider;
         this.view.init(this);
     }
 
@@ -88,9 +88,7 @@ public class SelectorDropDownDisplayer extends AbstractErraiDisplayer<SelectorDr
 
     protected void clearItems() {
         view.clearItems();
-        for (SelectorDropDownItem item : itemCollection) {
-            beanManager.destroyBean(item);
-        }
+        selectorDropDownProvider.destroyAll();
         itemCollection.clear();
     }
 
@@ -189,7 +187,7 @@ public class SelectorDropDownDisplayer extends AbstractErraiDisplayer<SelectorDr
                     }
                 }
             }
-            final SelectorDropDownItem item = beanManager.lookupBean(SelectorDropDownItem.class).newInstance();
+            final SelectorDropDownItem item = selectorDropDownProvider.get();
             item.init(i, value, title.toString());
             item.setSelectionIconVisible(multipleSelections);
             item.setOnSelectCommand(() -> onItemSelected(item));

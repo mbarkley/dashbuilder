@@ -32,7 +32,6 @@ import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.displayer.client.DataSetEditHandler;
 import org.dashbuilder.displayer.client.DataSetHandler;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.uberfire.client.mvp.UberView;
 import org.uberfire.mvp.Command;
 
@@ -66,7 +65,6 @@ public abstract class DataSetEditorWorkflow<T extends DataSetDef> implements IsW
     /**
      * -------------- CDI Injections --------------
      **/
-    protected SyncBeanManager beanManager;
     protected DataSetClientServices clientServices;
     protected DataSetValidatorProvider validatorProvider;
     protected Event<SaveRequestEvent> saveRequestEvent;
@@ -85,14 +83,12 @@ public abstract class DataSetEditorWorkflow<T extends DataSetDef> implements IsW
     @Inject
     public DataSetEditorWorkflow(final DataSetClientServices clientServices,
                                  final DataSetValidatorProvider validatorProvider,
-                                 final SyncBeanManager beanManager,
                                  final Event<SaveRequestEvent> saveRequestEvent,
                                  final Event<TestDataSetRequestEvent> testDataSetEvent,
                                  final Event<CancelRequestEvent> cancelRequestEvent,
                                  final View view) {
         this.clientServices = clientServices;
         this.validatorProvider = validatorProvider;
-        this.beanManager = beanManager;
         this.saveRequestEvent = saveRequestEvent;
         this.cancelRequestEvent = cancelRequestEvent;
         this.testDataSetEvent = testDataSetEvent;

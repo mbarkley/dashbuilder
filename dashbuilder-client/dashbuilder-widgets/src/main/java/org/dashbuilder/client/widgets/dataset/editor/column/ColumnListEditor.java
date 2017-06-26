@@ -27,7 +27,7 @@ import org.dashbuilder.client.widgets.resources.i18n.DataSetEditorConstants;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.editor.DataColumnDefEditor;
 import org.dashbuilder.dataset.def.DataColumnDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.UberView;
 
 import javax.annotation.PostConstruct;
@@ -53,7 +53,6 @@ public class ColumnListEditor implements IsWidget, org.dashbuilder.dataset.clien
         View clear();
     }
 
-    SyncBeanManager beanManager;
     DataColumnDefDriver dataColumnDefDriver;
     Event<ColumnsChangedEvent> columnsChangedEvent;
     public View view;
@@ -62,13 +61,14 @@ public class ColumnListEditor implements IsWidget, org.dashbuilder.dataset.clien
     List<DataColumnDef> acceptableColumns;
     final List<String> restrictedColumns = new LinkedList<String>();
     DataSetProviderType providerType;
+    ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor> columnDefEditorProvider;
 
     @Inject
-    public ColumnListEditor(final SyncBeanManager beanManager,
+    public ColumnListEditor(final ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor> columnDefEditorProvider,
                             final DataColumnDefDriver dataColumnDefDriver,
                             final Event<ColumnsChangedEvent> columnsChangedEvent,
                             final View view) {
-        this.beanManager = beanManager;
+        this.columnDefEditorProvider = columnDefEditorProvider;
         this.dataColumnDefDriver = dataColumnDefDriver;
         this.columnsChangedEvent = columnsChangedEvent;
         this.view = view;
@@ -347,7 +347,7 @@ public class ColumnListEditor implements IsWidget, org.dashbuilder.dataset.clien
     
     
     private org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor createColumnEditor() {
-        org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor e = beanManager.lookupBean(org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor.class).newInstance();
+        org.dashbuilder.client.widgets.dataset.editor.column.DataColumnDefEditor e = columnDefEditorProvider.get();
         e.setProviderType(providerType);
         return e;
     }

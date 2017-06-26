@@ -3,7 +3,8 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.create.*;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.edit.*;
 import org.dashbuilder.dataprovider.DataSetProviderType;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.Disposer;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -17,13 +18,19 @@ import javax.inject.Inject;
 @Dependent
 public class DataSetEditorWorkflowFactory {
     
-    SyncBeanManager beanManager;
     DataSetProviderTypeWorkflow providerTypeWorkflow;
+    ManagedInstance<DataSetEditWorkflow<?,?>> dataSetEditWorkflowProvider;
+    Disposer<DataSetEditorWorkflow<?>> disposer;
+    private ManagedInstance<DataSetBasicAttributesWorkflow<?, ?>> basicAttributesWorkflowProvider;
 
     @Inject
-    public DataSetEditorWorkflowFactory(final SyncBeanManager beanManager,
+    public DataSetEditorWorkflowFactory(final ManagedInstance<DataSetEditWorkflow<?,?>> dataSetEditWorkflowProvider,
+                                        final Disposer<DataSetEditorWorkflow<?>> disposer,
+                                        final ManagedInstance<DataSetBasicAttributesWorkflow<?, ?>> basicAttributesWorkflowProvider,
                                         final DataSetProviderTypeWorkflow providerTypeWorkflow) {
-        this.beanManager = beanManager;
+        this.dataSetEditWorkflowProvider = dataSetEditWorkflowProvider;
+        this.disposer = disposer;
+        this.basicAttributesWorkflowProvider = basicAttributesWorkflowProvider;
         this.providerTypeWorkflow = providerTypeWorkflow;
     }
 
@@ -37,7 +44,7 @@ public class DataSetEditorWorkflowFactory {
         final boolean isBean = type != null && DataSetProviderType.BEAN.equals(type);
         final boolean isCSV = type != null && DataSetProviderType.CSV.equals(type);
         final boolean isEL = type != null && DataSetProviderType.ELASTICSEARCH.equals(type);
-        Class workflowClass = null;
+        Class<? extends DataSetEditWorkflow<?, ?>> workflowClass = null;
         if (isSQL) {
             workflowClass = SQLDataSetEditWorkflow.class;
         } else if (isCSV) {
@@ -47,7 +54,7 @@ public class DataSetEditorWorkflowFactory {
         } else if (isEL) {
             workflowClass = ElasticSearchDataSetEditWorkflow.class;
         }
-        return  (DataSetEditWorkflow) beanManager.lookupBean( workflowClass ).newInstance();
+        return  dataSetEditWorkflowProvider.select(workflowClass).get();
     }
 
     /**
@@ -55,7 +62,7 @@ public class DataSetEditorWorkflowFactory {
      */
     public void dispose(DataSetEditorWorkflow workflow) {
         workflow.dispose();
-        beanManager.destroyBean(workflow);
+        disposer.dispose(workflow);
     }
 
     /**
@@ -76,7 +83,7 @@ public class DataSetEditorWorkflowFactory {
         final boolean isBean = type != null && DataSetProviderType.BEAN.equals(type);
         final boolean isCSV = type != null && DataSetProviderType.CSV.equals(type);
         final boolean isEL = type != null && DataSetProviderType.ELASTICSEARCH.equals(type);
-        Class workflowClass = null;
+        Class<? extends DataSetBasicAttributesWorkflow<?, ?>> workflowClass = null;
         if (isSQL) {
             workflowClass = SQLDataSetBasicAttributesWorkflow.class;
         } else if (isCSV) {
@@ -86,7 +93,7 @@ public class DataSetEditorWorkflowFactory {
         } else if (isEL) {
             workflowClass = ElasticSearchDataSetBasicAttributesWorkflow.class;
         }
-        return  (DataSetBasicAttributesWorkflow) beanManager.lookupBean( workflowClass ).newInstance();
+        return basicAttributesWorkflowProvider.select(workflowClass).get();
     }
     
 }

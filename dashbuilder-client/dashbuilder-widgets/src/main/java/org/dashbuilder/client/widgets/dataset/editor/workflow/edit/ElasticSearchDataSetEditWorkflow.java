@@ -17,9 +17,9 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.ElasticSearchDataSetDefDriver;
 import org.dashbuilder.client.widgets.dataset.editor.elasticsearch.ElasticSearchDataSetEditor;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
@@ -29,7 +29,6 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.ElasticSearchDataSetDefEditor;
 import org.dashbuilder.dataset.def.ElasticSearchDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 
 
 /**
@@ -44,22 +43,19 @@ public class ElasticSearchDataSetEditWorkflow extends DataSetEditWorkflow<Elasti
     @Inject
     public ElasticSearchDataSetEditWorkflow(final DataSetClientServices clientServices,
                                    final DataSetValidatorProvider validatorProvider,
-                                   final SyncBeanManager beanManager,
                                    final Event<SaveRequestEvent> saveRequestEvent,
                                    final Event<TestDataSetRequestEvent> testDataSetEvent,
                                    final Event<CancelRequestEvent> cancelRequestEvent,
+                                   final Instance<ElasticSearchDataSetDefDriver> driverProvider,
+                                   final Instance<ElasticSearchDataSetEditor> editorProvider,
                                    final View view) {
-        super(clientServices, validatorProvider, beanManager, saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
-    }
-
-
-    @Override
-    protected Class<? extends SimpleBeanEditorDriver<ElasticSearchDataSetDef, ElasticSearchDataSetDefEditor>> getDriverClass() {
-        return ElasticSearchDataSetDefDriver.class;
-    }
-
-    @Override
-    protected Class<? extends ElasticSearchDataSetDefEditor> getEditorClass() {
-        return ElasticSearchDataSetEditor.class;
+        super(clientServices,
+              validatorProvider,
+              saveRequestEvent,
+              testDataSetEvent,
+              cancelRequestEvent,
+              driverProvider,
+              editorProvider,
+              view);
     }
 }

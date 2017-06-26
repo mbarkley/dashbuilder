@@ -1,6 +1,5 @@
 package org.dashbuilder.client.widgets.dataset.editor.workflow.create;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.dashbuilder.client.widgets.dataset.editor.DataSetDefProviderTypeEditor;
@@ -15,14 +14,11 @@ import org.dashbuilder.common.client.editor.list.HorizImageListEditor;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.DataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.uberfire.mocks.EventSourceMock;
 import org.uberfire.mvp.Command;
 
@@ -36,8 +32,6 @@ import static org.mockito.Mockito.*;
 public class DataSetProviderTypeWorkflowTest extends AbstractDataSetWorkflowTest {
 
     @Mock
-    SyncBeanManager beanManager;
-    @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
     EventSourceMock<TestDataSetRequestEvent> testDataSetEvent;
@@ -50,11 +44,11 @@ public class DataSetProviderTypeWorkflowTest extends AbstractDataSetWorkflowTest
     @Mock
     DataSetDefProviderTypeDriver dataSetDefProviderTypeDriver;
     @Mock
-    SyncBeanDef<DataSetDefProviderTypeDriver> simpleBeanEditorDriverSyncBeanDef;
-    @Mock
     HorizImageListEditor<DataSetProviderType> provider;
     @Mock
     DataSetEditorWorkflow.View view;
+    @Mock
+    ManagedInstance<DataSetDefProviderTypeDriver> providerTypeDriverProvider;
 
     private DataSetProviderTypeWorkflow presenter;
 
@@ -62,22 +56,15 @@ public class DataSetProviderTypeWorkflowTest extends AbstractDataSetWorkflowTest
     public void setup() throws Exception {
 
         // Bean instantiation mocks.
-        when( beanManager.lookupBean( DataSetDefProviderTypeDriver.class ) ).thenReturn(
-                simpleBeanEditorDriverSyncBeanDef );
-        when( simpleBeanEditorDriverSyncBeanDef.newInstance() ).thenAnswer( new Answer<SimpleBeanEditorDriver>() {
-            @Override
-            public SimpleBeanEditorDriver answer( InvocationOnMock invocationOnMock ) throws Throwable {
-                return dataSetDefProviderTypeDriver;
-            }
-        } );
+        when(providerTypeDriverProvider.get()).thenReturn(dataSetDefProviderTypeDriver);
 
         presenter = new DataSetProviderTypeWorkflow( clientServices,
                                                      validatorProvider,
-                                                     beanManager,
                                                      providerTypeEditor,
                                                      saveRequestEvent,
                                                      cancelRequestEvent,
                                                      testDataSetEvent,
+                                                     providerTypeDriverProvider,
                                                      view );
         when( providerTypeEditor.provider() ).thenReturn( provider );
     }
@@ -93,7 +80,7 @@ public class DataSetProviderTypeWorkflowTest extends AbstractDataSetWorkflowTest
     public void testProviderTypeEdition() {
         DataSetDef def = mock( DataSetDef.class );
         presenter.edit( def ).providerTypeEdition();
-        verify( beanManager, times( 1 ) ).lookupBean( DataSetDefProviderTypeDriver.class );
+        verify( providerTypeDriverProvider, times( 1 ) ).get();
         verify( dataSetDefProviderTypeDriver, times( 1 ) ).initialize( providerTypeEditor );
         verify( dataSetDefProviderTypeDriver, times( 1 ) ).edit( any( DataSetDef.class ) );
         verify( view, times( 2 ) ).clearView();

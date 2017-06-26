@@ -31,8 +31,7 @@ import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.workbench.NavWorkbenchCtx;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.authz.PerspectiveTreeProvider;
 import org.uberfire.client.mvp.PerspectiveActivity;
 import org.uberfire.client.mvp.UberView;
@@ -60,7 +59,6 @@ public class NavTreeEditor implements IsWidget {
     public static final NavigationConstants i18n = NavigationConstants.INSTANCE;
 
     View view;
-    SyncBeanManager beanManager;
     PerspectiveTreeProvider perspectiveTreeProvider;
     NavTree navTree;
     NavTree navTreeBackup;
@@ -77,11 +75,17 @@ public class NavTreeEditor implements IsWidget {
     String literalDivider = "Divider";
     Optional<NavItemEditor> currentlyEditedItem = Optional.empty();
     Map<String, Integer> navItemMaxLevelsMap = new HashMap<>();
+    ManagedInstance<NavItemEditor> navItemEditorProvider;
+    ManagedInstance<PerspectiveActivity> perspectiveProvider;
 
     @Inject
-    public NavTreeEditor(View view, SyncBeanManager beanManager, PerspectiveTreeProvider perspectiveTreeProvider) {
+    public NavTreeEditor(View view,
+                         ManagedInstance<NavItemEditor> navItemEditorProvider,
+                         ManagedInstance<PerspectiveActivity> perspectiveProvider,
+                         PerspectiveTreeProvider perspectiveTreeProvider) {
         this.view = view;
-        this.beanManager = beanManager;
+        this.navItemEditorProvider = navItemEditorProvider;
+        this.perspectiveProvider = perspectiveProvider;
         this.perspectiveTreeProvider = perspectiveTreeProvider;
         this.view.init(this);
     }
@@ -204,7 +208,7 @@ public class NavTreeEditor implements IsWidget {
     }
 
     public NavItemEditor createNavItemEditor(NavItem navItem, boolean isFirst, boolean isLast, boolean childrenAllowed, boolean subGroupsAllowed) {
-        NavItemEditor navItemEditor = beanManager.lookupBean(NavItemEditor.class).newInstance();
+        NavItemEditor navItemEditor = navItemEditorProvider.get();
         navItemEditor.setLiteralGroup(literalGroup);
         navItemEditor.setLiteralPerspective(literalPerspective);
         navItemEditor.setLiteralDivider(literalDivider);
@@ -244,8 +248,7 @@ public class NavTreeEditor implements IsWidget {
     public Set<String> getPerspectiveIds(boolean visible) {
         Set<String> result = visible ? new HashSet<>() : new HashSet<>(perspectiveTreeProvider.getPerspectiveIdsExcluded());
 
-        for (SyncBeanDef<PerspectiveActivity> beanDef : beanManager.lookupBeans(PerspectiveActivity.class)) {
-            PerspectiveActivity p = beanDef.getInstance();
+        for (PerspectiveActivity p : perspectiveProvider) {
             try {
                 String id = p.getIdentifier();
                 boolean runtime = p instanceof PerspectiveEditorActivity;
@@ -259,7 +262,7 @@ public class NavTreeEditor implements IsWidget {
                     result.add(p.getIdentifier());
                 }
             } finally {
-                beanManager.destroyBean(p);
+                perspectiveProvider.destroy(p);
             }
         }
         return result;

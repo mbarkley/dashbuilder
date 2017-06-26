@@ -33,7 +33,7 @@ import org.dashbuilder.displayer.DisplayerAttributeDef;
 import org.dashbuilder.displayer.DisplayerAttributeGroupDef;
 import org.dashbuilder.displayer.DisplayerConstraints;
 import org.dashbuilder.displayer.client.AbstractErraiDisplayer;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 @Dependent
 public class SelectorLabelSetDisplayer extends AbstractErraiDisplayer<SelectorLabelSetDisplayer.View> {
@@ -60,13 +60,13 @@ public class SelectorLabelSetDisplayer extends AbstractErraiDisplayer<SelectorLa
     protected View view;
     protected boolean filterOn = false;
     protected boolean multipleSelections = false;
-    protected SyncBeanManager beanManager;
     protected Set<SelectorLabelItem> itemCollection = new HashSet<>();
+    protected ManagedInstance<SelectorLabelItem> selectorLabelItemProvider;
 
     @Inject
-    public SelectorLabelSetDisplayer(View view, SyncBeanManager beanManager) {
-        this.beanManager = beanManager;
+    public SelectorLabelSetDisplayer(View view, ManagedInstance<SelectorLabelItem> selectorLabelItemProvider) {
         this.view = view;
+        this.selectorLabelItemProvider = selectorLabelItemProvider;
         this.view.init(this);
     }
 
@@ -83,9 +83,7 @@ public class SelectorLabelSetDisplayer extends AbstractErraiDisplayer<SelectorLa
 
     protected void clearItems() {
         view.clearItems();
-        for (SelectorLabelItem item : itemCollection) {
-            beanManager.destroyBean(item);
-        }
+        selectorLabelItemProvider.destroyAll();
         itemCollection.clear();
     }
 
@@ -179,7 +177,7 @@ public class SelectorLabelSetDisplayer extends AbstractErraiDisplayer<SelectorLa
                         }
                     }
                 }
-                final SelectorLabelItem item = beanManager.lookupBean(SelectorLabelItem.class).newInstance();
+                final SelectorLabelItem item = selectorLabelItemProvider.get();
                 item.init(i, value, title.toString());
                 item.setOnSelectCommand(() -> onItemSelected(item));
                 item.setOnResetCommand(() -> onItemReset(item));

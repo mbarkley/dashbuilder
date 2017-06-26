@@ -14,21 +14,19 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.dataset.client.editor.SQLDataSetDefEditor;
 import org.dashbuilder.dataset.def.SQLDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import javax.enterprise.inject.Instance;
 
 @RunWith( GwtMockitoTestRunner.class )
 public class SQLDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -49,6 +47,10 @@ public class SQLDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     SQLDataSetDef dataSetDef;
     @Mock
     DataSetDefRefreshAttributesEditor refreshEditor;
+    @Mock
+    Instance<SQLDataSetDefDriver> driverProvider;
+    @Mock
+    Instance<org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetEditor> editorProvider;
 
     private SQLDataSetEditWorkflow presenter;
 
@@ -56,22 +58,17 @@ public class SQLDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     public void setup() throws Exception {
         super.setup();
 
-        presenter = new SQLDataSetEditWorkflow( clientServices, validatorProvider, beanManager,
-                                                saveRequestEvent, testDataSetEvent, cancelRequestEvent, view );
+        presenter = new SQLDataSetEditWorkflow(clientServices,
+                                               validatorProvider,
+                                               saveRequestEvent,
+                                               testDataSetEvent,
+                                               cancelRequestEvent,
+                                               driverProvider,
+                                               editorProvider,
+                                               view);
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.SQL );
         when( sqlEditor.refreshEditor() ).thenReturn( refreshEditor );
         when( refreshEditor.isRefreshEnabled() ).thenReturn( true );
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( SQLDataSetDefDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

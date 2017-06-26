@@ -33,7 +33,7 @@ import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.commons.validation.PortablePreconditions;
 
 
@@ -47,21 +47,27 @@ public class DataSetProviderTypeWorkflow extends DataSetEditorWorkflow<DataSetDe
 
     DataSetDefProviderTypeEditor providerTypeEditor;
     DataSetDefProviderTypeDriver dataSetDefProviderTypeDriver;
+    ManagedInstance<DataSetDefProviderTypeDriver> providerTypeDriverProvider;
 
     @Inject
     public DataSetProviderTypeWorkflow(final DataSetClientServices clientServices,
                                        final DataSetValidatorProvider validatorProvider,
-                                       final SyncBeanManager beanManager,
                                        final DataSetDefProviderTypeEditor providerTypeEditor,
                                        final Event<SaveRequestEvent> saveRequestEvent,
                                        final Event<CancelRequestEvent> cancelRequestEvent,
                                        final Event<TestDataSetRequestEvent> testDataSetEvent,
+                                       final ManagedInstance<DataSetDefProviderTypeDriver> providerTypeDriverProvider,
                                        final View view) {
 
-        super(clientServices, validatorProvider, beanManager,
-                saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
+        super(clientServices,
+              validatorProvider,
+              saveRequestEvent,
+              testDataSetEvent,
+              cancelRequestEvent,
+              view);
 
         this.providerTypeEditor = providerTypeEditor;
+        this.providerTypeDriverProvider = providerTypeDriverProvider;
     }
 
     @PostConstruct
@@ -85,7 +91,7 @@ public class DataSetProviderTypeWorkflow extends DataSetEditorWorkflow<DataSetDe
         checkDataSetDefNotNull();
 
         // Provider type editor driver edition.
-        dataSetDefProviderTypeDriver = beanManager.lookupBean(DataSetDefProviderTypeDriver.class).newInstance();
+        dataSetDefProviderTypeDriver = providerTypeDriverProvider.get();
         dataSetDefProviderTypeDriver.initialize(providerTypeEditor);
         dataSetDefProviderTypeDriver.edit(getDataSetDef());
 

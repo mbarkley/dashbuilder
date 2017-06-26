@@ -17,7 +17,7 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.create;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.validation.ConstraintViolation;
 
 import com.google.gwt.editor.client.Editor;
@@ -32,7 +32,6 @@ import org.dashbuilder.client.widgets.dataset.event.TestDataSetRequestEvent;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.uberfire.mvp.Command;
 
 
@@ -49,30 +48,32 @@ public abstract class DataSetBasicAttributesWorkflow<T extends DataSetDef, E ext
 
     SimpleBeanEditorDriver<T, E> driver;
     E editor;
+    Provider<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider;
+    private Provider<? extends SimpleBeanEditorDriver<T, E>> driverProvider;
+    private Provider<? extends E> editorProvider;
 
-    @Inject
     public DataSetBasicAttributesWorkflow(final DataSetClientServices clientServices,
                                           final DataSetValidatorProvider validatorProvider,
-                                          final SyncBeanManager beanManager,
                                           final DataSetDefBasicAttributesEditor basicAttributesEditor,
                                           final Event<SaveRequestEvent> saveRequestEvent,
                                           final Event<TestDataSetRequestEvent> testDataSetEvent,
                                           final Event<CancelRequestEvent> cancelRequestEvent,
+                                          final Provider<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider,
+                                          final Provider<? extends SimpleBeanEditorDriver<T, E>> driverProvider,
+                                          final Provider<? extends E> editorProvider,
                                           final View view) {
 
-        super(clientServices, validatorProvider, beanManager,
-                saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
+        super(clientServices, validatorProvider, saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
         this.basicAttributesEditor = basicAttributesEditor;
+        this.basicAttributesDriverProvider = basicAttributesDriverProvider;
+        this.driverProvider = driverProvider;
+        this.editorProvider = editorProvider;
     }
 
     @PostConstruct
     public void init() {
         super.init();
     }
-
-    protected abstract Class<? extends SimpleBeanEditorDriver<T, E>> getDriverClass();
-
-    protected abstract Class<? extends E> getEditorClass();
 
     protected Iterable<ConstraintViolation<?>> validate() {
         return validatorProvider.validateAttributes( getDataSetDef() );
@@ -89,12 +90,12 @@ public abstract class DataSetBasicAttributesWorkflow<T extends DataSetDef, E ext
     public DataSetEditorWorkflow basicAttributesEdition() {
         checkDataSetDefNotNull();
 
-        dataSetDefBasicAttributesDriver = beanManager.lookupBean(DataSetDefBasicAttributesDriver.class).newInstance();
+        dataSetDefBasicAttributesDriver = basicAttributesDriverProvider.get();
         dataSetDefBasicAttributesDriver.initialize(basicAttributesEditor);
         dataSetDefBasicAttributesDriver.edit(getDataSetDef());
 
-        driver = beanManager.lookupBean( getDriverClass() ).newInstance();
-        editor = beanManager.lookupBean( getEditorClass() ).newInstance();
+        driver = driverProvider.get();
+        editor = editorProvider.get();
         driver.initialize(editor);
         driver.edit(getDataSetDef());
 

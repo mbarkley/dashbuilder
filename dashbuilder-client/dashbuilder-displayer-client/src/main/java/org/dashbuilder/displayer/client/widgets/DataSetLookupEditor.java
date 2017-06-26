@@ -41,7 +41,6 @@ import org.dashbuilder.dataset.events.DataSetDefModifiedEvent;
 import org.dashbuilder.dataset.events.DataSetDefRegisteredEvent;
 import org.dashbuilder.dataset.events.DataSetDefRemovedEvent;
 import org.dashbuilder.dataset.filter.DataSetFilter;
-import org.dashbuilder.dataset.group.AggregateFunctionType;
 import org.dashbuilder.dataset.group.ColumnGroup;
 import org.dashbuilder.dataset.group.DataSetGroup;
 import org.dashbuilder.dataset.group.GroupFunction;
@@ -54,7 +53,7 @@ import org.dashbuilder.displayer.client.widgets.filter.DataSetFilterEditor;
 import org.dashbuilder.displayer.client.widgets.group.ColumnFunctionEditor;
 import org.dashbuilder.displayer.client.widgets.group.DataSetGroupDateEditor;
 import org.jboss.errai.common.client.api.RemoteCallback;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.UberView;
 
 import static org.uberfire.commons.validation.PortablePreconditions.checkNotNull;
@@ -118,7 +117,6 @@ public class DataSetLookupEditor implements IsWidget {
     }
 
     View view;
-    SyncBeanManager beanManager;
     DataSetClientServices clientServices;
     DataSetFilterEditor filterEditor;
     DataSetGroupDateEditor groupDateEditor;
@@ -128,6 +126,7 @@ public class DataSetLookupEditor implements IsWidget {
     Event<DataSetLookupChangedEvent> changeEvent = null;
     List<DataSetDef> _dataSetDefList = new ArrayList<DataSetDef>();
     Map<Integer, ColumnFunctionEditor> _editorsMap = new HashMap<Integer, ColumnFunctionEditor>();
+    ManagedInstance<ColumnFunctionEditor> colFunctionEditorProvider;
 
     DataSetDefFilter dataSetDefFilter = new DataSetDefFilter() {
         public boolean accept(DataSetDef def) {
@@ -137,13 +136,13 @@ public class DataSetLookupEditor implements IsWidget {
 
     @Inject
     public DataSetLookupEditor(final View view,
-                               SyncBeanManager beanManager,
+                               ManagedInstance<ColumnFunctionEditor> colFunctionEditorProvider,
                                DataSetFilterEditor filterEditor,
                                DataSetGroupDateEditor groupDateEditor,
                                DataSetClientServices clientServices,
                                Event<DataSetLookupChangedEvent> event) {
         this.view = view;
-        this.beanManager = beanManager;
+        this.colFunctionEditorProvider = colFunctionEditorProvider;
         this.filterEditor = filterEditor;
         this.groupDateEditor = groupDateEditor;
         this.clientServices = clientServices;
@@ -431,7 +430,7 @@ public class DataSetLookupEditor implements IsWidget {
         Iterator<ColumnFunctionEditor> it = _editorsMap.values().iterator();
         while (it.hasNext()) {
             ColumnFunctionEditor editor = it.next();
-            beanManager.destroyBean(editor);
+            colFunctionEditorProvider.destroy(editor);
         }
 
         // Build the column editors
@@ -458,7 +457,7 @@ public class DataSetLookupEditor implements IsWidget {
             }
 
             String columnTitle = lookupConstraints.getColumnTitle(columnIdx);
-            ColumnFunctionEditor columnEditor = beanManager.lookupBean(ColumnFunctionEditor.class).newInstance();
+            ColumnFunctionEditor columnEditor = colFunctionEditorProvider.get();
             columnEditor.init(dataSetMetadata, groupFunction, columnType, columnTitle, functionsEnabled, canDelete);
 
             _editorsMap.put(_editorsMap.size(), columnEditor);

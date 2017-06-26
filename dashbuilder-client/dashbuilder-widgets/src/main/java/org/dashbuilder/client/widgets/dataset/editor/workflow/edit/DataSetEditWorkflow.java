@@ -18,6 +18,7 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
@@ -31,8 +32,6 @@ import org.dashbuilder.dataset.client.editor.DataSetDefEditor;
 import org.dashbuilder.dataset.def.DataColumnDef;
 import org.dashbuilder.dataset.def.DataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.uberfire.mvp.Command;
 
 
 /**
@@ -44,27 +43,27 @@ public abstract class DataSetEditWorkflow<T extends DataSetDef, E extends DataSe
 
     protected SimpleBeanEditorDriver<T, E> driver;
     protected E editor;
+    private Instance<? extends SimpleBeanEditorDriver<T, E>> driverProvider;
+    private Instance<? extends E> editorProvider;
 
     @Inject
     public DataSetEditWorkflow( final DataSetClientServices clientServices,
                                 final DataSetValidatorProvider validatorProvider,
-                                final SyncBeanManager beanManager,
                                 final Event<SaveRequestEvent> saveRequestEvent,
                                 final Event<TestDataSetRequestEvent> testDataSetEvent,
                                 final Event<CancelRequestEvent> cancelRequestEvent,
+                                final Instance<? extends SimpleBeanEditorDriver<T, E>> driverProvider,
+                                final Instance<? extends E> editorProvider,
                                 final View view ) {
-        super( clientServices, validatorProvider, beanManager,
-               saveRequestEvent, testDataSetEvent, cancelRequestEvent, view );
+        super( clientServices, validatorProvider, saveRequestEvent, testDataSetEvent, cancelRequestEvent, view );
+        this.driverProvider = driverProvider;
+        this.editorProvider = editorProvider;
     }
 
     @PostConstruct
     public void init() {
         super.init();
     }
-
-    protected abstract Class<? extends SimpleBeanEditorDriver<T, E>> getDriverClass();
-
-    protected abstract Class<? extends E> getEditorClass();
 
     protected Iterable<ConstraintViolation<?>> validate( boolean isCacheEnabled,
                                                          boolean isPushEnabled,
@@ -81,8 +80,8 @@ public abstract class DataSetEditWorkflow<T extends DataSetDef, E extends DataSe
         this.dataSetDef = definition;
         checkDataSetDefNotNull();
 
-        this.driver = beanManager.lookupBean( getDriverClass() ).newInstance();
-        this.editor = beanManager.lookupBean( getEditorClass() ).newInstance();
+        this.driver = driverProvider.get();
+        this.editor = editorProvider.get();
         driver.initialize( editor );
         editor.setAcceptableValues( allColumns );
         driver.edit( definition );
@@ -107,12 +106,13 @@ public abstract class DataSetEditWorkflow<T extends DataSetDef, E extends DataSe
     }
 
     @Override
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
     public void dispose() {
         if (driver != null) {
-            beanManager.destroyBean(driver);
+            ((Instance) driverProvider).destroy(driver);
         }
         if (editor != null) {
-            beanManager.destroyBean(editor);
+            ((Instance) editorProvider).destroy(editor);
         }
     }
 

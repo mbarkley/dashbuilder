@@ -10,14 +10,11 @@ import org.dashbuilder.common.client.editor.ValueBoxEditor;
 import org.dashbuilder.dataprovider.DataSetProviderType;
 import org.dashbuilder.dataset.ColumnType;
 import org.dashbuilder.dataset.def.DataColumnDef;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.uberfire.mocks.EventSourceMock;
 
 import java.util.ArrayList;
@@ -33,11 +30,10 @@ import static org.mockito.Mockito.*;
 @RunWith(GwtMockitoTestRunner.class)
 public class ColumnListEditorTest {
 
-    @Mock SyncBeanManager beanManager;
+    @Mock ManagedInstance<DataColumnDefEditor> dataColumnDefEditorProvider;
     @Mock DataColumnDefDriver dataColumnDefDriver;
     @Mock EventSourceMock<ColumnsChangedEvent> columnsChangedEvent;
     @Mock ColumnListEditor.View view;
-    @Mock SyncBeanDef<DataColumnDefEditor> columnDefEditorSyncBeanDef;
     @Mock DataColumnDefEditor dataColumnDefEditor;
     private ColumnListEditor presenter;
     final ListEditor<DataColumnDef, org.dashbuilder.dataset.client.editor.DataColumnDefEditor> listEditor = mock(ListEditor.class);
@@ -45,16 +41,10 @@ public class ColumnListEditorTest {
 
     @Before
     public void setup() {
-        presenter = new ColumnListEditor(beanManager, dataColumnDefDriver, columnsChangedEvent, view);
+        presenter = new ColumnListEditor(dataColumnDefEditorProvider, dataColumnDefDriver, columnsChangedEvent, view);
         
         // Bean instantiation mocks.
-        when(beanManager.lookupBean(DataColumnDefEditor.class)).thenReturn(columnDefEditorSyncBeanDef);
-        when( columnDefEditorSyncBeanDef.newInstance() ).thenAnswer( new Answer<DataColumnDefEditor>() {
-            @Override
-            public DataColumnDefEditor answer( InvocationOnMock invocationOnMock ) throws Throwable {
-                return dataColumnDefEditor;
-            }
-        } );
+        when(dataColumnDefEditorProvider.get()).then(inv -> dataColumnDefEditor);
         
         // Acceptable values.
         when(col1.getId()).thenReturn("col1");
@@ -392,12 +382,7 @@ public class ColumnListEditorTest {
         presenter.listEditor.getList().add(col2);
         presenter.listEditor.getEditors().add(col2Editor);
 
-        when( columnDefEditorSyncBeanDef.newInstance() ).thenAnswer( new Answer<DataColumnDefEditor>() {
-            @Override
-            public DataColumnDefEditor answer( InvocationOnMock invocationOnMock ) throws Throwable {
-                return col2Editor;
-            }
-        } );
+        when(dataColumnDefEditorProvider.get()).thenReturn(col2Editor);
         
         ColumnListEditor.DataColumnDefEditorSource source = presenter.createDataColumnDefEditorSource();
         source.dispose(col2Editor);

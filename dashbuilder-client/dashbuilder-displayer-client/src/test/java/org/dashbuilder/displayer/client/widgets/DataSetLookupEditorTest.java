@@ -38,8 +38,7 @@ import org.dashbuilder.displayer.client.widgets.filter.DataSetFilterEditor;
 import org.dashbuilder.displayer.client.widgets.group.ColumnFunctionEditor;
 import org.dashbuilder.displayer.client.widgets.group.DataSetGroupDateEditor;
 import org.jboss.errai.common.client.api.RemoteCallback;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -146,12 +145,6 @@ public class DataSetLookupEditorTest {
     Event<DataSetLookupChangedEvent> event;
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
-    SyncBeanDef<ColumnFunctionEditor> columnFunctionEditorBeanDef;
-
-    @Mock
     ColumnFunctionEditor columnFunctionEditor;
 
     @Mock
@@ -163,11 +156,14 @@ public class DataSetLookupEditorTest {
     @Mock
     DataSetClientServices clientServices;
 
+    @Mock
+    ManagedInstance<ColumnFunctionEditor> colFunctionEditorProvider;
+
     DataSetLookupEditor presenter = null;
 
     @Before
     public void init() throws Exception {
-        presenter = new DataSetLookupEditor(view, beanManager, filterEditor, groupDateEditor, clientServices, event);
+        presenter = new DataSetLookupEditor(view, colFunctionEditorProvider, filterEditor, groupDateEditor, clientServices, event);
 
         doAnswer(new Answer() {
             @Override
@@ -196,8 +192,7 @@ public class DataSetLookupEditorTest {
             }
         }).when(clientServices).fetchMetadata(eq(REVENUE_UUID), any(DataSetMetadataCallback.class));
 
-        when(beanManager.lookupBean(ColumnFunctionEditor.class)).thenReturn(columnFunctionEditorBeanDef);
-        when(columnFunctionEditorBeanDef.newInstance()).thenReturn(columnFunctionEditor);
+        when(colFunctionEditorProvider.get()).thenReturn(columnFunctionEditor);
     }
 
     @Test

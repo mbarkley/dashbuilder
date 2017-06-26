@@ -17,10 +17,10 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.CSVDataSetDefDriver;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.SaveRequestEvent;
@@ -29,7 +29,6 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.CSVDataSetDefEditor;
 import org.dashbuilder.dataset.def.CSVDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 
 
 /**
@@ -43,24 +42,21 @@ public class CSVDataSetEditWorkflow extends DataSetEditWorkflow<CSVDataSetDef, C
 
     @Inject
     public CSVDataSetEditWorkflow(final DataSetClientServices clientServices,
-                                   final DataSetValidatorProvider validatorProvider,
-                                   final SyncBeanManager beanManager,
-                                   final Event<SaveRequestEvent> saveRequestEvent,
-                                   final Event<TestDataSetRequestEvent> testDataSetEvent,
-                                   final Event<CancelRequestEvent> cancelRequestEvent,
-                                   final View view) {
-        super(clientServices, validatorProvider, beanManager, saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
-    }
-
-
-    @Override
-    protected Class<? extends SimpleBeanEditorDriver<CSVDataSetDef, CSVDataSetDefEditor>> getDriverClass() {
-        return CSVDataSetDefDriver.class;
-    }
-
-    @Override
-    protected Class<? extends CSVDataSetDefEditor> getEditorClass() {
-        return org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetEditor.class;
+                                  final DataSetValidatorProvider validatorProvider,
+                                  final Event<SaveRequestEvent> saveRequestEvent,
+                                  final Event<TestDataSetRequestEvent> testDataSetEvent,
+                                  final Event<CancelRequestEvent> cancelRequestEvent,
+                                  final Instance<CSVDataSetDefDriver> driverProvider,
+                                  final Instance<org.dashbuilder.client.widgets.dataset.editor.csv.CSVDataSetEditor> editorProvider,
+                                  final View view) {
+        super(clientServices,
+              validatorProvider,
+              saveRequestEvent,
+              testDataSetEvent,
+              cancelRequestEvent,
+              driverProvider,
+              editorProvider,
+              view);
     }
 
     @Override

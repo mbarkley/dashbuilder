@@ -12,21 +12,19 @@ import org.dashbuilder.dataset.DataSet;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.dataset.def.BeanDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import javax.enterprise.inject.Instance;
 
 @RunWith( GwtMockitoTestRunner.class )
 public class BeanDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -45,6 +43,10 @@ public class BeanDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     BeanDataSetDef dataSetDef;
     @Mock
     DataSetDefRefreshAttributesEditor refreshEditor;
+    @Mock
+    Instance<BeanDataSetDefDriver> driverProvider;
+    @Mock
+    Instance<org.dashbuilder.client.widgets.dataset.editor.bean.BeanDataSetEditor> editorProvider;
 
     private BeanDataSetEditWorkflow presenter;
 
@@ -52,22 +54,17 @@ public class BeanDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
     public void setup() throws Exception {
         super.setup();
 
-        presenter = new BeanDataSetEditWorkflow( clientServices, validatorProvider, beanManager,
-                                                 saveRequestEvent, testDataSetEvent, cancelRequestEvent, view );
+        presenter = new BeanDataSetEditWorkflow(clientServices,
+                                                validatorProvider,
+                                                saveRequestEvent,
+                                                testDataSetEvent,
+                                                cancelRequestEvent,
+                                                driverProvider,
+                                                editorProvider,
+                                                view);
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.BEAN );
         when( beanEditor.refreshEditor() ).thenReturn( refreshEditor );
         when( refreshEditor.isRefreshEnabled() ).thenReturn( true );
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( BeanDataSetDefDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.bean.BeanDataSetEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

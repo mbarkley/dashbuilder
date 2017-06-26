@@ -15,8 +15,6 @@
  */
 package org.dashbuilder.displayer.client.widgets.filter;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -34,7 +32,7 @@ import org.dashbuilder.dataset.filter.FilterFactory;
 import org.dashbuilder.displayer.client.events.ColumnFilterChangedEvent;
 import org.dashbuilder.displayer.client.events.ColumnFilterDeletedEvent;
 import org.dashbuilder.displayer.client.events.DataSetFilterChangedEvent;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.UberView;
 
 @Dependent
@@ -64,15 +62,15 @@ public class DataSetFilterEditor implements IsWidget {
     View view = null;
     DataSetFilter filter = null;
     DataSetMetadata metadata = null;
-    SyncBeanManager beanManager;
     Event<DataSetFilterChangedEvent> changeEvent;
+    ManagedInstance<ColumnFilterEditor> colFilterEditorProvider;
 
     @Inject
     public DataSetFilterEditor(View view,
-                               SyncBeanManager beanManager,
+                               ManagedInstance<ColumnFilterEditor> colFilterEditorProvider,
                                Event<DataSetFilterChangedEvent> changeEvent) {
         this.view = view;
-        this.beanManager = beanManager;
+        this.colFilterEditorProvider = colFilterEditorProvider;
         this.changeEvent = changeEvent;
         view.init(this);
     }
@@ -100,7 +98,7 @@ public class DataSetFilterEditor implements IsWidget {
         view.clearColumnFilterEditors();
         if (filter != null) {
             for (ColumnFilter columnFilter : filter.getColumnFilterList()) {
-                ColumnFilterEditor columnFilterEditor = beanManager.lookupBean(ColumnFilterEditor.class).newInstance();
+                ColumnFilterEditor columnFilterEditor = colFilterEditorProvider.get();
                 columnFilterEditor.init(metadata, columnFilter);
                 view.addColumnFilterEditor(columnFilterEditor);
             }
@@ -130,7 +128,7 @@ public class DataSetFilterEditor implements IsWidget {
         }
         filter.addFilterColumn(columnFilter);
 
-        ColumnFilterEditor columnFilterEditor = beanManager.lookupBean(ColumnFilterEditor.class).newInstance();
+        ColumnFilterEditor columnFilterEditor = colFilterEditorProvider.get();
         columnFilterEditor.init(metadata, columnFilter);
         columnFilterEditor.expand();
 
@@ -153,7 +151,7 @@ public class DataSetFilterEditor implements IsWidget {
         view.removeColumnFilterEditor(editor);
         view.showNewFilterHome();
 
-        beanManager.destroyBean(editor);
+        colFilterEditorProvider.destroy(editor);
         changeEvent.fire(new DataSetFilterChangedEvent(filter));
     }
 }

@@ -15,8 +15,6 @@
  */
 package org.dashbuilder.client.dashboard;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,10 +24,7 @@ import org.dashbuilder.displayer.DisplayerSettings;
 import org.dashbuilder.displayer.client.PerspectiveCoordinator;
 import org.dashbuilder.displayer.json.DisplayerSettingsJSONMarshaller;
 import org.dashbuilder.displayer.client.widgets.DisplayerEditorPopup;
-import org.jboss.errai.ioc.client.container.IOC;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.jboss.errai.ioc.client.container.SyncBeanManagerImpl;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.PerspectiveActivity;
 import org.uberfire.client.mvp.PerspectiveManager;
 import org.uberfire.client.mvp.PlaceManager;
@@ -52,7 +47,6 @@ import org.uberfire.workbench.model.toolbar.ToolBar;
  */
 public class DashboardPerspectiveActivity implements PerspectiveActivity {
 
-    private SyncBeanManager beanManager;
     private DashboardManager dashboardManager;
     private PerspectiveManager perspectiveManager;
     private PlaceManager placeManager;
@@ -62,19 +56,23 @@ public class DashboardPerspectiveActivity implements PerspectiveActivity {
     private PlaceRequest place;
     private String id;
     private boolean persistent;
+    private ManagedInstance<PerspectiveActivity> perspectiveProvider;
+    private ManagedInstance<DisplayerEditorPopup> displayPopupProvider;
 
     public DashboardPerspectiveActivity() {
     }
 
     public DashboardPerspectiveActivity(String id,
                                         DashboardManager dashboardManager,
-                                        SyncBeanManager beanManager,
+                                        ManagedInstance<PerspectiveActivity> perspectiveProvider,
+                                        ManagedInstance<DisplayerEditorPopup> displayPopupProvider,
                                         PerspectiveManager perspectiveManager,
                                         PlaceManager placeManager,
                                         PerspectiveCoordinator perspectiveCoordinator) {
 
         this.id = id;
-        this.beanManager = beanManager;
+        this.perspectiveProvider = perspectiveProvider;
+        this.displayPopupProvider = displayPopupProvider;
         this.persistent = true;
         this.dashboardManager = dashboardManager;
         this.perspectiveManager = perspectiveManager;
@@ -203,7 +201,7 @@ public class DashboardPerspectiveActivity implements PerspectiveActivity {
             public void execute() {
                 /* Displayer settings == null => Create a brand new displayer */
                 perspectiveCoordinator.editOn();
-                DisplayerEditorPopup displayerEditor = beanManager.lookupBean(DisplayerEditorPopup.class).newInstance();
+                DisplayerEditorPopup displayerEditor = displayPopupProvider.get();
                 displayerEditor.init(null);
                 displayerEditor.setOnSaveCommand(getSaveDisplayerCommand(displayerEditor));
                 displayerEditor.setOnCloseCommand(getCloseDisplayerCommand(displayerEditor));
@@ -215,7 +213,7 @@ public class DashboardPerspectiveActivity implements PerspectiveActivity {
         return new Command() {
             public void execute() {
                 perspectiveCoordinator.editOff();
-                beanManager.destroyBean(editor);
+                displayPopupProvider.destroy(editor);
 
                 placeManager.goTo(createPlaceRequest(editor.getDisplayerSettings()));
                 perspectiveManager.savePerspectiveState(new Command() {
@@ -230,7 +228,7 @@ public class DashboardPerspectiveActivity implements PerspectiveActivity {
         return new Command() {
             public void execute() {
                 perspectiveCoordinator.editOff();
-                beanManager.destroyBean(editor);
+                displayPopupProvider.destroy(editor);
             }
         };
     }
@@ -246,13 +244,10 @@ public class DashboardPerspectiveActivity implements PerspectiveActivity {
 
     private PerspectiveActivity getDefaultPerspectiveActivity() {
         PerspectiveActivity first = null;
-        SyncBeanManagerImpl beanManager = (SyncBeanManagerImpl) IOC.getBeanManager();
-        Collection<SyncBeanDef<PerspectiveActivity>> perspectives = beanManager.lookupBeans(PerspectiveActivity.class);
-        Iterator<SyncBeanDef<PerspectiveActivity>> perspectivesIterator = perspectives.iterator();
-        while (perspectivesIterator.hasNext() ) {
+        Iterator<PerspectiveActivity> perspectivesIterator = perspectiveProvider.iterator();
+        while (perspectivesIterator.hasNext()) {
 
-            SyncBeanDef<PerspectiveActivity> perspective = perspectivesIterator.next();
-            PerspectiveActivity instance = perspective.getInstance();
+            PerspectiveActivity instance = perspectivesIterator.next();
 
             if (instance.isDefault()) {
                 return instance;

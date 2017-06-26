@@ -35,7 +35,7 @@ import org.dashbuilder.renderer.client.selector.SelectorDropDownDisplayer;
 import org.dashbuilder.renderer.client.selector.SelectorLabelSetDisplayer;
 import org.dashbuilder.renderer.client.selector.SelectorSliderDisplayer;
 import org.dashbuilder.renderer.client.table.TableDisplayer;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 import static org.dashbuilder.displayer.DisplayerType.*;
 import static org.dashbuilder.displayer.DisplayerSubType.*;
@@ -47,9 +47,30 @@ import static org.dashbuilder.displayer.DisplayerSubType.*;
 public class DefaultRenderer extends AbstractRendererLibrary {
 
     public static final String UUID = "default";
+    
+    /*
+     * IMPORTANT:
+     * We are not using a single ManagedInstance<AbstractGwtTable> because
+     * AbstractGwtTable has lots of subtypes, and we do not want to force all of these to be reachable.
+     */
 
     @Inject
-    protected SyncBeanManager beanManager;
+    private ManagedInstance<TableDisplayer> tableDisplayerProvider;
+    
+    @Inject
+    private ManagedInstance<SelectorDropDownDisplayer> selectorDropDownDisplayer;
+    
+    @Inject
+    private ManagedInstance<SelectorLabelSetDisplayer> selectorLabelSetDisplayer;
+    
+    @Inject
+    private ManagedInstance<SelectorSliderDisplayer> selectorSliderDisplayer;
+    
+    @Inject
+    private ManagedInstance<SelectorDisplayer> selectorDisplayer;
+    
+    @Inject
+    private ManagedInstance<MetricDisplayer> metricDisplayer;
 
     @PostConstruct
     private void init() {
@@ -99,23 +120,23 @@ public class DefaultRenderer extends AbstractRendererLibrary {
         DisplayerSubType subtype = displayerSettings.getSubtype();
 
         if (TABLE.equals(type)) {
-            return  beanManager.lookupBean(TableDisplayer.class).newInstance();
+            return  tableDisplayerProvider.get();
         }
         if (SELECTOR.equals(type)) {
             if (SELECTOR_DROPDOWN.equals(subtype)) {
-                return beanManager.lookupBean(SelectorDropDownDisplayer.class).newInstance();
+                return selectorDropDownDisplayer.get();
             }
             if (SELECTOR_LABELS.equals(subtype)) {
-                return beanManager.lookupBean(SelectorLabelSetDisplayer.class).newInstance();
+                return selectorLabelSetDisplayer.get();
             }
             if (SELECTOR_SLIDER.equals(subtype)) {
-                return beanManager.lookupBean(SelectorSliderDisplayer.class).newInstance();
+                return selectorSliderDisplayer.get();
             }
             // Keep backward compatibility with 0.6 and prior versions
-            return beanManager.lookupBean(SelectorDisplayer.class).newInstance();
+            return selectorDisplayer.get();
         }
         if (METRIC.equals(type)) {
-            MetricDisplayer displayer = beanManager.lookupBean(MetricDisplayer.class).newInstance();
+            MetricDisplayer displayer = metricDisplayer.get();
             _metricDisplayerMap.put(displayer.getView().getUniqueId(), displayer);
             return displayer;
         }

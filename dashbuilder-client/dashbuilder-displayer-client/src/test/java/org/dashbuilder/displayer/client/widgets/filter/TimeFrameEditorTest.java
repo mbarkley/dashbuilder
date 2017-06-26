@@ -17,8 +17,7 @@ package org.dashbuilder.displayer.client.widgets.filter;
 import org.dashbuilder.dataset.date.Month;
 import org.dashbuilder.dataset.date.TimeFrame;
 import org.dashbuilder.dataset.group.DateIntervalType;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,9 +32,6 @@ import static org.mockito.Mockito.*;
 public class TimeFrameEditorTest {
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
     Command changeCommand;
 
     @Mock
@@ -46,6 +42,9 @@ public class TimeFrameEditorTest {
 
     @Mock
     TimeInstantEditor.View timeInstantView;
+
+    @Mock
+    ManagedInstance<TimeInstantEditor> timeInstanceEditorProvider;
 
     TimeAmountEditor fromAmountEditor;
     TimeAmountEditor toAmountEditor;
@@ -64,11 +63,9 @@ public class TimeFrameEditorTest {
         toAmountEditor = new TimeAmountEditor(timeAmountView);
         fromInstantEditor = new TimeInstantEditor(timeInstantView, fromAmountEditor);
         toInstantEditor = new TimeInstantEditor(timeInstantView, toAmountEditor);
-        timeFrameEditor = new TimeFrameEditor(timeFrameView, beanManager);
+        timeFrameEditor = new TimeFrameEditor(timeFrameView, timeInstanceEditorProvider);
 
-        SyncBeanDef tieBeanDef = mock(SyncBeanDef.class);
-        when(beanManager.lookupBean(TimeInstantEditor.class)).thenReturn(tieBeanDef);
-        when(tieBeanDef.newInstance()).thenReturn(fromInstantEditor, toInstantEditor);
+        when(timeInstanceEditorProvider.get()).thenReturn(fromInstantEditor, toInstantEditor);
     }
 
     @Test

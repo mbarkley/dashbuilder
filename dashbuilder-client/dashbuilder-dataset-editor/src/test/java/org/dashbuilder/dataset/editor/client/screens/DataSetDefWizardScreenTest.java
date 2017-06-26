@@ -25,7 +25,6 @@ import org.dashbuilder.dataset.def.SQLDataSetDef;
 import org.dashbuilder.dataset.service.DataSetDefVfsServices;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +53,6 @@ public class DataSetDefWizardScreenTest {
 
     @Mock EventSourceMock<NotificationEvent> notification;
     @Mock PlaceManager placeManager;
-    @Mock SyncBeanManager beanManager;
     @Mock DataSetEditorWorkflowFactory workflowFactory;
     @Mock DataSetClientServices clientServices;
     @Mock ErrorPopupPresenter errorPopupPresenter;
@@ -103,7 +101,7 @@ public class DataSetDefWizardScreenTest {
         when(editWorkflow.showConfigurationTab()).thenReturn(editWorkflow);
         when(editWorkflow.showAdvancedTab()).thenReturn(editWorkflow);
         when(workflowFactory.basicAttributes(any(DataSetProviderType.class))).thenReturn(dataSetBasicAttributesWorkflow);
-        presenter = new DataSetDefWizardScreen( beanManager, workflowFactory, services, clientServices,
+        presenter = new DataSetDefWizardScreen( workflowFactory, services, clientServices,
                                                 notification, placeManager, errorPopupPresenter, savePopUpPresenter, view );
         presenter.services = services;
     }

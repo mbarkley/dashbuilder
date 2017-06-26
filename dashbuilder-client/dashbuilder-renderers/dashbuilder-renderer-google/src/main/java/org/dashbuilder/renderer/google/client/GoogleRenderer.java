@@ -30,7 +30,7 @@ import org.dashbuilder.displayer.DisplayerSubType;
 import org.dashbuilder.displayer.DisplayerType;
 import org.dashbuilder.displayer.client.AbstractRendererLibrary;
 import org.dashbuilder.displayer.client.Displayer;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 import static org.dashbuilder.displayer.DisplayerType.*;
 import static org.dashbuilder.displayer.DisplayerSubType.*;
@@ -66,9 +66,9 @@ public class GoogleRenderer extends AbstractRendererLibrary {
             METERCHART,
             TABLE,
             MAP);
-
+    
     @Inject
-    protected SyncBeanManager beanManager;
+    private ManagedInstance<GoogleDisplayer<?>> googleDisplayerProvider;
 
     @Override
     public String getUUID() {
@@ -119,28 +119,28 @@ public class GoogleRenderer extends AbstractRendererLibrary {
         GoogleDisplayer displayer;
         switch (displayerType) {
             case BARCHART:
-                displayer = beanManager.lookupBean(GoogleBarChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleBarChartDisplayer.class).get();
                 break;
             case PIECHART:
-                displayer = beanManager.lookupBean(GooglePieChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GooglePieChartDisplayer.class).get();
                 break;
             case AREACHART:
-                displayer = beanManager.lookupBean(GoogleAreaChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleAreaChartDisplayer.class).get();
                 break;
             case LINECHART:
-                displayer = beanManager.lookupBean(GoogleLineChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleLineChartDisplayer.class).get();
                 break;
             case BUBBLECHART:
-                displayer = beanManager.lookupBean(GoogleBubbleChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleBubbleChartDisplayer.class).get();
                 break;
             case METERCHART:
-                displayer = beanManager.lookupBean(GoogleMeterChartDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleMeterChartDisplayer.class).get();
                 break;
             case TABLE:
-                displayer = beanManager.lookupBean(GoogleTableDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleTableDisplayer.class).get();
                 break;
             case MAP:
-                displayer = beanManager.lookupBean(GoogleMapDisplayer.class).newInstance();
+                displayer = googleDisplayerProvider.select(GoogleMapDisplayer.class).get();
                 break;
             default:
                 return null;

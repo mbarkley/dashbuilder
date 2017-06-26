@@ -28,7 +28,7 @@ import org.dashbuilder.navigation.NavGroup;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.workbench.NavWorkbenchCtx;
 import org.jboss.errai.common.client.api.IsElement;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.ext.plugin.event.PluginSaved;
 import org.uberfire.mvp.Command;
@@ -60,21 +60,21 @@ public class NavTilesWidget extends BaseNavWidget {
     View view;
     PerspectivePluginManager perspectivePluginManager;
     PlaceManager placeManager;
-    SyncBeanManager beanManager;
     String currentPerspectiveId = null;
     Stack<NavItem> navItemStack = new Stack<>();
+    ManagedInstance<NavItemTileWidget> navItemTileProvider;
 
     @Inject
     public NavTilesWidget(View view,
                           NavigationManager navigationManager,
                           PerspectivePluginManager perspectivePluginManager,
                           PlaceManager placeManager,
-                          SyncBeanManager beanManager) {
+                          ManagedInstance<NavItemTileWidget> navItemTileProvider) {
         super(view, navigationManager);
         this.view = view;
         this.perspectivePluginManager = perspectivePluginManager;
         this.placeManager = placeManager;
-        this.beanManager = beanManager;
+        this.navItemTileProvider = navItemTileProvider;
     }
 
     public Stack<NavItem> getNavItemStack() {
@@ -103,7 +103,7 @@ public class NavTilesWidget extends BaseNavWidget {
 
     @Override
     protected void showItem(NavItem navItem) {
-        NavItemTileWidget tileWidget = beanManager.lookupBean(NavItemTileWidget.class).getInstance();
+        NavItemTileWidget tileWidget = navItemTileProvider.get();
         tileWidget.setOnClick(() -> this.openItem(navItem));
         tileWidget.show(navItem);
         view.addTileWidget(tileWidget);

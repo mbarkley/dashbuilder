@@ -29,8 +29,7 @@ import org.dashbuilder.displayer.DisplayerSettings;
 import org.dashbuilder.displayer.DisplayerSettingsFactory;
 import org.dashbuilder.displayer.client.AbstractDisplayerTest;
 import org.dashbuilder.displayer.client.DisplayerListener;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,22 +45,18 @@ import static org.mockito.Mockito.*;
 public class SelectorDropDownDisplayerTest extends AbstractDisplayerTest {
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
-    SyncBeanDef<SelectorDropDownItem> dropDownItemBean;
-
-    @Mock
     SelectorDropDownItem dropDownItem;
 
+    @Mock
+    ManagedInstance<SelectorDropDownItem> selectorDropDownProvider;
+
     public SelectorDropDownDisplayer createSelectorDisplayer(DisplayerSettings settings) {
-        return initDisplayer(new SelectorDropDownDisplayer(mock(SelectorDropDownDisplayer.View.class), beanManager), settings);
+        return initDisplayer(new SelectorDropDownDisplayer(mock(SelectorDropDownDisplayer.View.class), selectorDropDownProvider), settings);
     }
 
     @Before
     public void setUp() {
-        when(beanManager.lookupBean(SelectorDropDownItem.class)).thenReturn(dropDownItemBean);
-        when(dropDownItemBean.newInstance()).thenReturn(dropDownItem);
+        when(selectorDropDownProvider.get()).thenReturn(dropDownItem);
     }
 
     @Test

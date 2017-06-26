@@ -19,7 +19,6 @@ import org.dashbuilder.dataset.DataSetLookup;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.DataSetReadyCallback;
 import org.dashbuilder.dataset.def.DataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +40,6 @@ public class DataSetEditorWorkflowTest extends AbstractDataSetWorkflowTest {
     public static final String UUID = "uuid1";
     public static final String NAME = "name1";
 
-    @Mock SyncBeanManager beanManager;
     @Mock EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock EventSourceMock<TestDataSetRequestEvent> testDataSetEvent;
     @Mock EventSourceMock<CancelRequestEvent> cancelRequestEvent;
@@ -58,7 +56,7 @@ public class DataSetEditorWorkflowTest extends AbstractDataSetWorkflowTest {
     public void setup() throws Exception {
         super.setup();
 
-        presenter = new DataSetEditorWorkflow(clientServices, validatorProvider, beanManager, saveRequestEvent,
+        presenter = new DataSetEditorWorkflow(clientServices, validatorProvider, saveRequestEvent,
                 testDataSetEvent, cancelRequestEvent, view) {
 
         };

@@ -15,7 +15,6 @@
  */
 package org.dashbuilder.displayer.client;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
 import org.dashbuilder.common.client.StringUtils;
@@ -30,9 +30,7 @@ import org.dashbuilder.displayer.DisplayerSettings;
 import org.dashbuilder.displayer.DisplayerSubType;
 import org.dashbuilder.displayer.DisplayerType;
 import org.dashbuilder.displayer.client.resources.i18n.CommonConstants;
-import org.jboss.errai.ioc.client.container.IOC;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 /**
  * This class holds a registry of all the RendererLibrary implementations available.
@@ -40,26 +38,24 @@ import org.jboss.errai.ioc.client.container.SyncBeanManager;
 @ApplicationScoped
 public class RendererManager {
 
-    private SyncBeanManager beanManager;
     private List<RendererLibrary> renderersList = new ArrayList<>();
     private Map<DisplayerType, RendererLibrary> renderersDefault = new EnumMap<>(DisplayerType.class);
     private Map<DisplayerType, List<RendererLibrary>> renderersByType = new EnumMap<>(DisplayerType.class);
     private Map<DisplayerSubType, List<RendererLibrary>> renderersBySubType = new EnumMap<>(DisplayerSubType.class);
+    private ManagedInstance<RendererLibrary> rendererLibraryProvider;
 
     public RendererManager() {
     }
 
     @Inject
-    public RendererManager(SyncBeanManager beanManager) {
-        this.beanManager = beanManager;
+    public RendererManager(@Any ManagedInstance<RendererLibrary> rendererLibraryProvider) {
+        this.rendererLibraryProvider = rendererLibraryProvider;
     }
 
     @PostConstruct
     private void init() {
-        Collection<SyncBeanDef<RendererLibrary>> beanDefs = beanManager.lookupBeans(RendererLibrary.class);
-        for (SyncBeanDef<RendererLibrary> beanDef : beanDefs) {
+        for (RendererLibrary lib : rendererLibraryProvider) {
 
-            RendererLibrary lib = beanDef.getInstance();
             renderersList.add(lib);
 
             for (DisplayerType displayerType : DisplayerType.values()) {

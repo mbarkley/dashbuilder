@@ -20,8 +20,8 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBasicAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.driver.DataSetDefBasicAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.SQLDataSetDefAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.SaveRequestEvent;
@@ -30,7 +30,7 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.SQLDataSetDefAttributesEditor;
 import org.dashbuilder.dataset.def.SQLDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 
 /**
@@ -43,32 +43,25 @@ public class SQLDataSetBasicAttributesWorkflow extends DataSetBasicAttributesWor
     @Inject
     public SQLDataSetBasicAttributesWorkflow( final DataSetClientServices clientServices,
                                               final DataSetValidatorProvider validatorProvider,
-                                              final SyncBeanManager beanManager,
                                               final DataSetDefBasicAttributesEditor basicAttributesEditor,
                                               final Event<SaveRequestEvent> saveRequestEvent,
                                               final Event<TestDataSetRequestEvent> testDataSetEvent,
                                               final Event<CancelRequestEvent> cancelRequestEvent,
+                                              final ManagedInstance<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider,
+                                              final ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetDefAttributesEditor> editorProvider,
+                                              final ManagedInstance<SQLDataSetDefAttributesDriver> driverProvider,
                                               final View view ) {
 
         super( clientServices,
                validatorProvider,
-               beanManager,
                basicAttributesEditor,
                saveRequestEvent,
                testDataSetEvent,
                cancelRequestEvent,
+               basicAttributesDriverProvider,
+               driverProvider,
+               editorProvider,
                view );
-    }
-
-
-    @Override
-    protected Class<? extends SimpleBeanEditorDriver<SQLDataSetDef, SQLDataSetDefAttributesEditor>> getDriverClass() {
-        return SQLDataSetDefAttributesDriver.class;
-    }
-
-    @Override
-    protected Class<? extends SQLDataSetDefAttributesEditor> getEditorClass() {
-        return org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetDefAttributesEditor.class;
     }
 
     @Override

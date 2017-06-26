@@ -21,7 +21,7 @@ import javax.inject.Inject;
 
 import org.dashbuilder.client.navigation.NavigationManager;
 import org.dashbuilder.navigation.NavGroup;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 @Dependent
 public class NavDropDownWidget extends BaseNavWidget {
@@ -34,18 +34,18 @@ public class NavDropDownWidget extends BaseNavWidget {
     }
 
     View view;
-    SyncBeanManager beanManager;
+    private ManagedInstance<NavDropDownWidget> navDropDownProvider;
 
     @Inject
-    public NavDropDownWidget(View view, SyncBeanManager beanManager, NavigationManager navigationManager) {
+    public NavDropDownWidget(View view, ManagedInstance<NavDropDownWidget> navDropDownProvider, NavigationManager navigationManager) {
         super(view, navigationManager);
         this.view = view;
-        this.beanManager = beanManager;
+        this.navDropDownProvider = navDropDownProvider;
     }
 
     @Override
     public NavWidget lookupNavGroupWidget() {
-        return beanManager.lookupBean(NavDropDownWidget.class).newInstance();
+        return navDropDownProvider.get();
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import org.dashbuilder.client.widgets.dataset.editor.driver.ElasticSearchDataSetDefDriver;
+import org.dashbuilder.client.widgets.dataset.editor.elasticsearch.ElasticSearchDataSetEditor;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.AbstractDataSetWorkflowTest;
 import org.dashbuilder.client.widgets.dataset.editor.workflow.DataSetEditorWorkflow;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
@@ -12,21 +13,19 @@ import org.dashbuilder.dataset.DataSet;
 import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.DataSetDefRefreshAttributesEditor;
 import org.dashbuilder.dataset.def.ElasticSearchDataSetDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.mocks.EventSourceMock;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import javax.enterprise.inject.Instance;
 
 @RunWith( GwtMockitoTestRunner.class )
 public class ElasticSearchDataSetEditWorkflowTest extends AbstractDataSetWorkflowTest {
 
-    @Mock
-    SyncBeanManager beanManager;
     @Mock
     EventSourceMock<SaveRequestEvent> saveRequestEvent;
     @Mock
@@ -45,6 +44,10 @@ public class ElasticSearchDataSetEditWorkflowTest extends AbstractDataSetWorkflo
     ElasticSearchDataSetDef dataSetDef;
     @Mock
     DataSetDefRefreshAttributesEditor refreshEditor;
+    @Mock
+    Instance<ElasticSearchDataSetDefDriver> driverProvider;
+    @Mock
+    Instance<ElasticSearchDataSetEditor> editorProvider;
 
     private ElasticSearchDataSetEditWorkflow presenter;
 
@@ -53,25 +56,15 @@ public class ElasticSearchDataSetEditWorkflowTest extends AbstractDataSetWorkflo
         super.setup();
         presenter = new ElasticSearchDataSetEditWorkflow( clientServices,
                                                           validatorProvider,
-                                                          beanManager,
                                                           saveRequestEvent,
                                                           testDataSetEvent,
                                                           cancelRequestEvent,
+                                                          driverProvider,
+                                                          editorProvider,
                                                           view );
         when( dataSetDef.getProvider() ).thenReturn( DataSetProviderType.ELASTICSEARCH );
         when( elasticSearchEditor.refreshEditor() ).thenReturn( refreshEditor );
         when( refreshEditor.isRefreshEnabled() ).thenReturn( true );
-    }
-
-    @Test
-    public void testGetDriverClass() {
-        assertEquals( ElasticSearchDataSetDefDriver.class, presenter.getDriverClass() );
-    }
-
-    @Test
-    public void testGetEditorClass() {
-        assertEquals( org.dashbuilder.client.widgets.dataset.editor.elasticsearch.ElasticSearchDataSetEditor.class,
-                      presenter.getEditorClass() );
     }
 
     @Test

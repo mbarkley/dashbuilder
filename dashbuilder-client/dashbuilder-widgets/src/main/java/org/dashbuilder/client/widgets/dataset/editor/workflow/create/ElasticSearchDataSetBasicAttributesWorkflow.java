@@ -19,8 +19,8 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import org.dashbuilder.client.widgets.dataset.editor.attributes.DataSetDefBasicAttributesEditor;
+import org.dashbuilder.client.widgets.dataset.editor.driver.DataSetDefBasicAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.ElasticSearchDataSetDefAttributesDriver;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.SaveRequestEvent;
@@ -29,7 +29,7 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.ElasticSearchDataSetDefAttributesEditor;
 import org.dashbuilder.dataset.def.ElasticSearchDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 
 
 /**
@@ -43,24 +43,24 @@ public class ElasticSearchDataSetBasicAttributesWorkflow extends DataSetBasicAtt
     @Inject
     public ElasticSearchDataSetBasicAttributesWorkflow(final DataSetClientServices clientServices,
                                              final DataSetValidatorProvider validatorProvider,
-                                             final SyncBeanManager beanManager,
                                              final DataSetDefBasicAttributesEditor basicAttributesEditor,
                                              final Event<SaveRequestEvent> saveRequestEvent,
                                              final Event<TestDataSetRequestEvent> testDataSetEvent,
                                              final Event<CancelRequestEvent> cancelRequestEvent,
+                                             final ManagedInstance<DataSetDefBasicAttributesDriver> basicAttributesDriverProvider,
+                                             final ManagedInstance<org.dashbuilder.client.widgets.dataset.editor.elasticsearch.ElasticSearchDataSetDefAttributesEditor> editorProvider,
+                                             final ManagedInstance<ElasticSearchDataSetDefAttributesDriver> driverProvider,
                                              final View view) {
 
-        super(clientServices, validatorProvider, beanManager, basicAttributesEditor, saveRequestEvent, testDataSetEvent, cancelRequestEvent, view);
-    }
-
-
-    @Override
-    protected Class<? extends SimpleBeanEditorDriver<ElasticSearchDataSetDef, ElasticSearchDataSetDefAttributesEditor>> getDriverClass() {
-        return ElasticSearchDataSetDefAttributesDriver.class;
-    }
-
-    @Override
-    protected Class<? extends ElasticSearchDataSetDefAttributesEditor> getEditorClass() {
-        return org.dashbuilder.client.widgets.dataset.editor.elasticsearch.ElasticSearchDataSetDefAttributesEditor.class;
+        super(clientServices,
+              validatorProvider,
+              basicAttributesEditor,
+              saveRequestEvent,
+              testDataSetEvent,
+              cancelRequestEvent,
+              basicAttributesDriverProvider,
+              driverProvider,
+              editorProvider,
+              view);
     }
 }

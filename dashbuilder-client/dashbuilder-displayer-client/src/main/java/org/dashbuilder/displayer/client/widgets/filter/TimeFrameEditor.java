@@ -18,13 +18,12 @@ package org.dashbuilder.displayer.client.widgets.filter;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import org.dashbuilder.dataset.date.Month;
 import org.dashbuilder.dataset.date.TimeFrame;
 import org.dashbuilder.dataset.date.TimeInstant;
 import org.dashbuilder.dataset.group.DateIntervalType;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.UberView;
 import org.uberfire.mvp.Command;
 
@@ -47,16 +46,16 @@ public class TimeFrameEditor implements FunctionParameterEditor {
     }
 
     View view;
-    SyncBeanManager beanManager;
     TimeFrame timeFrame = null;
     TimeInstantEditor fromEditor;
     TimeInstantEditor toEditor;
     Command onChangeCommand = new Command() { public void execute() {} };
+    ManagedInstance<TimeInstantEditor> timeInstanceEditorProvider;
 
     @Inject
-    public TimeFrameEditor(View view, SyncBeanManager beanManager) {
+    public TimeFrameEditor(View view, ManagedInstance<TimeInstantEditor> timeInstanceEditorProvider) {
         this.view = view;
-        this.beanManager = beanManager;
+        this.timeInstanceEditorProvider = timeInstanceEditorProvider;
     }
 
     @Override
@@ -80,7 +79,7 @@ public class TimeFrameEditor implements FunctionParameterEditor {
         this.onChangeCommand = onChangeCommand;
         this.timeFrame = tf != null ? tf : TimeFrame.parse("begin[year] till end[year]");
 
-        this.fromEditor = beanManager.lookupBean(TimeInstantEditor.class).newInstance();
+        this.fromEditor = timeInstanceEditorProvider.get();
         this.fromEditor.init(timeFrame.getFrom(), new Command() {
             public void execute() {
                 fromEditor.getTimeInstant().setFirstMonthOfYear(getFirstMonthOfYear());
@@ -89,7 +88,7 @@ public class TimeFrameEditor implements FunctionParameterEditor {
                 fireChanges();
             }
         });
-        this.toEditor = beanManager.lookupBean(TimeInstantEditor.class).newInstance();
+        this.toEditor = timeInstanceEditorProvider.get();
         this.toEditor.init(timeFrame.getTo(), new Command() {
             public void execute() {
                 toEditor.getTimeInstant().setFirstMonthOfYear(getFirstMonthOfYear());

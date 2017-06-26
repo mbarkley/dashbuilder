@@ -28,8 +28,7 @@ import org.dashbuilder.displayer.DisplayerSettings;
 import org.dashbuilder.displayer.DisplayerSettingsFactory;
 import org.dashbuilder.displayer.client.AbstractDisplayerTest;
 import org.dashbuilder.displayer.client.DisplayerListener;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,22 +44,18 @@ import static org.mockito.Mockito.*;
 public class SelectorLabelSetDisplayerTest extends AbstractDisplayerTest {
 
     @Mock
-    SyncBeanManager beanManager;
-
-    @Mock
-    SyncBeanDef<SelectorLabelItem> labelItemBean;
-
-    @Mock
     SelectorLabelItem labelItem;
 
+    @Mock
+    ManagedInstance<SelectorLabelItem> selectorLabelItemProvider;
+
     public SelectorLabelSetDisplayer createSelectorDisplayer(DisplayerSettings settings) {
-        return initDisplayer(new SelectorLabelSetDisplayer(mock(SelectorLabelSetDisplayer.View.class), beanManager), settings);
+        return initDisplayer(new SelectorLabelSetDisplayer(mock(SelectorLabelSetDisplayer.View.class), selectorLabelItemProvider), settings);
     }
 
     @Before
     public void setUp() {
-        when(beanManager.lookupBean(SelectorLabelItem.class)).thenReturn(labelItemBean);
-        when(labelItemBean.newInstance()).thenReturn(labelItem);
+        when(selectorLabelItemProvider.get()).thenReturn(labelItem);
     }
 
     @Test

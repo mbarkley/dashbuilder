@@ -27,11 +27,11 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import org.dashbuilder.displayer.client.PerspectiveCoordinator;
+import org.dashbuilder.displayer.client.widgets.DisplayerEditorPopup;
 import org.dashbuilder.shared.dashboard.events.DashboardDeletedEvent;
-import org.jboss.errai.ioc.client.container.IOC;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.jboss.errai.ioc.client.container.SyncBeanDef;
 import org.jboss.errai.ioc.client.container.SyncBeanManager;
-import org.jboss.errai.ioc.client.container.SyncBeanManagerImpl;
 import org.uberfire.client.exporter.SingletonBeanDef;
 import org.uberfire.client.mvp.Activity;
 import org.uberfire.client.mvp.ActivityBeansCache;
@@ -54,9 +54,13 @@ public class DashboardManager {
     private PerspectiveCoordinator perspectiveCoordinator;
     private ActivityBeansCache activityBeansCache;
     private Event<DashboardDeletedEvent> dashboardDeletedEvent;
+    private ManagedInstance<PerspectiveActivity> perspectiveProvider;
+    private ManagedInstance<DisplayerEditorPopup> displayPopupProvider;
 
     @Inject
     public DashboardManager(SyncBeanManager beanManager,
+                            ManagedInstance<PerspectiveActivity> perspectiveProvider,
+                            ManagedInstance<DisplayerEditorPopup> displayPopupProvider,
                             PlaceManager placeManager,
                             PerspectiveManager perspectiveManager,
                             PerspectiveCoordinator perspectiveCoordinator,
@@ -64,6 +68,8 @@ public class DashboardManager {
                             Event<DashboardDeletedEvent> dashboardDeletedEvent) {
 
         this.beanManager = beanManager;
+        this.perspectiveProvider = perspectiveProvider;
+        this.displayPopupProvider = displayPopupProvider;
         this.placeManager = placeManager;
         this.perspectiveManager = perspectiveManager;
         this.perspectiveCoordinator = perspectiveCoordinator;
@@ -89,12 +95,12 @@ public class DashboardManager {
     @SuppressWarnings( "unchecked" )
     protected DashboardPerspectiveActivity registerPerspective(String id) {
         DashboardPerspectiveActivity activity = new DashboardPerspectiveActivity(id, this,
-                beanManager,
+                perspectiveProvider,
+                displayPopupProvider,
                 perspectiveManager,
                 placeManager,
                 perspectiveCoordinator);
 
-        SyncBeanManagerImpl beanManager = (SyncBeanManagerImpl) IOC.getBeanManager();
         final SyncBeanDef<PerspectiveActivity> beanDef =
                 new SingletonBeanDef<>(activity,
                                        PerspectiveActivity.class,

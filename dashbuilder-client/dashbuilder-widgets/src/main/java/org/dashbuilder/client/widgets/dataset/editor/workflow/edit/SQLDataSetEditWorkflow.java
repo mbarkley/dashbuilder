@@ -17,10 +17,10 @@ package org.dashbuilder.client.widgets.dataset.editor.workflow.edit;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 
-import com.google.gwt.editor.client.SimpleBeanEditorDriver;
 import org.dashbuilder.client.widgets.dataset.editor.driver.SQLDataSetDefDriver;
 import org.dashbuilder.client.widgets.dataset.event.CancelRequestEvent;
 import org.dashbuilder.client.widgets.dataset.event.SaveRequestEvent;
@@ -29,7 +29,6 @@ import org.dashbuilder.dataset.client.DataSetClientServices;
 import org.dashbuilder.dataset.client.editor.SQLDataSetDefEditor;
 import org.dashbuilder.dataset.def.SQLDataSetDef;
 import org.dashbuilder.validations.DataSetValidatorProvider;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
 
 
 /**
@@ -43,29 +42,20 @@ public class SQLDataSetEditWorkflow extends DataSetEditWorkflow<SQLDataSetDef, S
     @Inject
     public SQLDataSetEditWorkflow( final DataSetClientServices clientServices,
                                    final DataSetValidatorProvider validatorProvider,
-                                   final SyncBeanManager beanManager,
                                    final Event<SaveRequestEvent> saveRequestEvent,
                                    final Event<TestDataSetRequestEvent> testDataSetEvent,
                                    final Event<CancelRequestEvent> cancelRequestEvent,
+                                   final Instance<SQLDataSetDefDriver> driverProvider,
+                                   final Instance<org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetEditor> editorProvider,
                                    final View view ) {
         super( clientServices,
                validatorProvider,
-               beanManager,
                saveRequestEvent,
                testDataSetEvent,
                cancelRequestEvent,
+               driverProvider,
+               editorProvider,
                view );
-    }
-
-
-    @Override
-    protected Class<? extends SimpleBeanEditorDriver<SQLDataSetDef, SQLDataSetDefEditor>> getDriverClass() {
-        return SQLDataSetDefDriver.class;
-    }
-
-    @Override
-    protected Class<? extends SQLDataSetDefEditor> getEditorClass() {
-        return org.dashbuilder.client.widgets.dataset.editor.sql.SQLDataSetEditor.class;
     }
 
     @Override

@@ -25,7 +25,7 @@ import org.dashbuilder.displayer.client.widgets.DisplayerEditorPopup;
 import org.dashbuilder.displayer.client.widgets.DisplayerViewer;
 import org.dashbuilder.displayer.json.DisplayerSettingsJSONMarshaller;
 import org.gwtbootstrap3.client.ui.Modal;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.ext.layout.editor.client.api.HasModalConfiguration;
 import org.uberfire.ext.layout.editor.client.api.ModalConfigurationContext;
@@ -40,19 +40,19 @@ import java.util.Map;
 @Dependent
 public class DisplayerDragComponent implements PerspectiveEditorDragComponent, HasModalConfiguration {
 
-    SyncBeanManager beanManager;
     DisplayerViewer viewer;
     PlaceManager placeManager;
     PerspectiveCoordinator perspectiveCoordinator;
     DisplayerSettingsJSONMarshaller marshaller;
+    private ManagedInstance<DisplayerEditorPopup> displayerPopupProvider;
 
     @Inject
-    public DisplayerDragComponent( SyncBeanManager beanManager,
+    public DisplayerDragComponent( ManagedInstance<DisplayerEditorPopup> displayerPopupProvider,
                                    DisplayerViewer viewer,
                                    PlaceManager placeManager,
                                    PerspectiveCoordinator perspectiveCoordinator ) {
 
-        this.beanManager = beanManager;
+        this.displayerPopupProvider = displayerPopupProvider;
         this.viewer = viewer;
         this.placeManager = placeManager;
         this.perspectiveCoordinator = perspectiveCoordinator;
@@ -102,7 +102,7 @@ public class DisplayerDragComponent implements PerspectiveEditorDragComponent, H
         Map<String, String> properties = ctx.getComponentProperties();
         String json = properties.get( "json" );
         DisplayerSettings settings = json != null ? marshaller.fromJsonString( json ) : null;
-        DisplayerEditorPopup editor = beanManager.lookupBean( DisplayerEditorPopup.class ).newInstance();
+        DisplayerEditorPopup editor = displayerPopupProvider.get();
         editor.init( settings );
         editor.setOnSaveCommand( getSaveCommand( editor, ctx ) );
         editor.setOnCloseCommand( getCloseCommand( editor, ctx ) );
@@ -115,7 +115,7 @@ public class DisplayerDragComponent implements PerspectiveEditorDragComponent, H
                 String json = marshaller.toJsonString( editor.getDisplayerSettings() );
                 ctx.setComponentProperty( "json", json );
                 ctx.configurationFinished();
-                beanManager.destroyBean( editor );
+                displayerPopupProvider.destroy( editor );
             }
         };
     }
@@ -124,7 +124,7 @@ public class DisplayerDragComponent implements PerspectiveEditorDragComponent, H
         return new Command() {
             public void execute() {
                 ctx.configurationCancelled();
-                beanManager.destroyBean( editor );
+                displayerPopupProvider.destroy( editor );
             }
         };
     }

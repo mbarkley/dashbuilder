@@ -20,8 +20,7 @@ import org.dashbuilder.client.navigation.widget.NavTilesWidget;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.impl.NavTreeBuilder;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,13 +44,10 @@ public class NavTilesWidgetTest {
     NavigationManager navigationManager;
 
     @Mock
-    SyncBeanManager beanManager;
+    ManagedInstance<NavItemTileWidget> navItemTileProvider;
 
     @Mock
     PlaceManager placeManager;
-
-    @Mock
-    SyncBeanDef<NavItemTileWidget> tileWidgetBeanDef;
 
     @Mock
     NavItemTileWidget tileWidget;
@@ -61,9 +57,8 @@ public class NavTilesWidgetTest {
 
     @Before
     public void setUp() throws Exception {
-        when(beanManager.lookupBean(NavItemTileWidget.class)).thenReturn(tileWidgetBeanDef);
-        when(tileWidgetBeanDef.getInstance()).thenReturn(tileWidget);
-        presenter = new NavTilesWidget(view, navigationManager, pluginManager, placeManager, beanManager);
+        when(navItemTileProvider.get()).thenReturn(tileWidget);
+        presenter = new NavTilesWidget(view, navigationManager, pluginManager, placeManager, navItemTileProvider);
 
         tree = new NavTreeBuilder()
                 .group("Home", "Home", null, false)

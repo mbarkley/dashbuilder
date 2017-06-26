@@ -5,13 +5,13 @@ import org.dashbuilder.client.navigation.plugin.PerspectivePluginManager;
 import org.dashbuilder.navigation.NavItem;
 import org.dashbuilder.navigation.NavTree;
 import org.dashbuilder.navigation.impl.NavTreeBuilder;
-import org.jboss.errai.ioc.client.container.SyncBeanDef;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.uberfire.client.authz.PerspectiveTreeProvider;
+import org.uberfire.client.mvp.PerspectiveActivity;
 import org.uberfire.client.mvp.PlaceManager;
 import org.uberfire.ext.widgets.common.client.dropdown.PerspectiveDropDown;
 
@@ -25,7 +25,9 @@ public class NavTreeEditorTest {
     @Mock
     private NavTreeEditor.View viewM;
     @Mock
-    private SyncBeanManager beanManagerM;
+    private ManagedInstance<NavItemEditor> navItemEditorProviderM;
+    @Mock
+    private ManagedInstance<PerspectiveActivity> perspectiveProviderM;
     @Mock
     private PerspectiveTreeProvider perspectiveTreeProviderM;
     @Mock
@@ -38,8 +40,6 @@ public class NavTreeEditorTest {
     private NavItemEditor.View navItemEditorViewM;
     @Mock
     private NavItem navItemM;
-    @Mock
-    private SyncBeanDef<NavItemEditor> navItemEditorBeanDef;
 
     private NavItemEditor navItemEditor;
 
@@ -58,12 +58,11 @@ public class NavTreeEditorTest {
     @Before
     public void setUp() {
         navItemEditor = spy(new NavItemEditor(navItemEditorViewM, placeManagerM, perspectiveDropDownM, perspectivePluginManagerM));
-        when(beanManagerM.lookupBean(NavItemEditor.class)).thenReturn(navItemEditorBeanDef);
-        when(navItemEditorBeanDef.newInstance()).thenReturn(navItemEditor);
+        when(navItemEditorProviderM.get()).thenReturn(navItemEditor);
     }
     @Test
     public void testAllSubgroupsAllowed() {
-        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, beanManagerM, perspectiveTreeProviderM));
+        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, navItemEditorProviderM, perspectiveProviderM, perspectiveTreeProviderM));
         treeEditor.setMaxLevels(-1);
         treeEditor.edit(NAV_TREE);
 
@@ -72,7 +71,7 @@ public class NavTreeEditorTest {
 
     @Test
     public void testNoSubgroupsAllowed() {
-        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, beanManagerM, perspectiveTreeProviderM));
+        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, navItemEditorProviderM, perspectiveProviderM, perspectiveTreeProviderM));
         treeEditor.setMaxLevels(1);
         treeEditor.edit(NAV_TREE);
 
@@ -87,7 +86,7 @@ public class NavTreeEditorTest {
         NavItem level1b = NAV_TREE.getItemById("level1b");
         NavItem level2b = NAV_TREE.getItemById("level2b");
 
-        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, beanManagerM, perspectiveTreeProviderM));
+        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, navItemEditorProviderM, perspectiveProviderM, perspectiveTreeProviderM));
         treeEditor.setMaxLevels("level1a", 1);
         treeEditor.edit(NAV_TREE);
 
@@ -106,7 +105,7 @@ public class NavTreeEditorTest {
         NavItem level1b = NAV_TREE.getItemById("level1b");
         NavItem level2b = NAV_TREE.getItemById("level2b");
 
-        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, beanManagerM, perspectiveTreeProviderM));
+        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, navItemEditorProviderM, perspectiveProviderM, perspectiveTreeProviderM));
         treeEditor.setMaxLevels("root", 3);
         treeEditor.edit(NAV_TREE);
 
@@ -119,7 +118,7 @@ public class NavTreeEditorTest {
 
     @Test
     public void testFinishEdition() {
-        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, beanManagerM, perspectiveTreeProviderM));
+        NavTreeEditor treeEditor = spy(new NavTreeEditor(viewM, navItemEditorProviderM, perspectiveProviderM, perspectiveTreeProviderM));
         treeEditor.edit(NAV_TREE);
 
         navItemEditor.onNewSubGroup();
@@ -131,7 +130,8 @@ public class NavTreeEditorTest {
     @Test
     public void itShouldBeImpossibleToOpenMultipleNavItemEditorInputs() { // DASHBUILDE-217
         NavTreeEditor treeEditor = new NavTreeEditor(viewM,
-                                                     beanManagerM,
+                                                     navItemEditorProviderM,
+                                                     perspectiveProviderM,
                                                      perspectiveTreeProviderM);
 
         NavItemEditor first = mock(NavItemEditor.class);
@@ -145,7 +145,8 @@ public class NavTreeEditorTest {
     @Test
     public void whenItemEditFinishedNavTreeEditorCleared() {
         NavTreeEditor treeEditor = new NavTreeEditor(viewM,
-                                                     beanManagerM,
+                                                     navItemEditorProviderM,
+                                                     perspectiveProviderM,
                                                      perspectiveTreeProviderM);
 
         // This creates onItemEditFinishedCallback for the editor

@@ -35,7 +35,7 @@ import org.dashbuilder.dataset.filter.FilterFactory;
 import org.dashbuilder.dataset.date.TimeFrame;
 import org.dashbuilder.displayer.client.events.ColumnFilterChangedEvent;
 import org.dashbuilder.displayer.client.events.ColumnFilterDeletedEvent;
-import org.jboss.errai.ioc.client.container.SyncBeanManager;
+import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.uberfire.client.mvp.UberView;
 import org.uberfire.mvp.Command;
 
@@ -64,19 +64,19 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     View view = null;
-    SyncBeanManager beanManager = null;
     ColumnFilter filter = null;
     DataSetMetadata metadata = null;
     Event<ColumnFilterChangedEvent> changedEvent = null;
     Event<ColumnFilterDeletedEvent> deletedEvent = null;
+    ManagedInstance<FunctionParameterEditor> parameterEditorProvider = null;
 
     @Inject
     public ColumnFilterEditor(View view,
-                              SyncBeanManager beanManager,
+                              ManagedInstance<FunctionParameterEditor> parameterEditorProvider,
                               Event<ColumnFilterChangedEvent> changedEvent,
                               Event<ColumnFilterDeletedEvent> deletedEvent) {
         this.view = view;
-        this.beanManager = beanManager;
+        this.parameterEditorProvider = parameterEditorProvider;
         this.changedEvent = changedEvent;
         this.deletedEvent = deletedEvent;
         this.view.init(this);
@@ -237,7 +237,7 @@ public class ColumnFilterEditor implements IsWidget {
     protected FunctionParameterEditor createDateInputWidget(final List paramList, final int paramIndex) {
         Date param = (Date) paramList.get(paramIndex);
 
-        final DateParameterEditor input = beanManager.lookupBean(DateParameterEditor.class).newInstance();
+        final DateParameterEditor input = parameterEditorProvider.select(DateParameterEditor.class).get();
         input.setValue(param);
         input.setOnChangeCommand(new Command() {
             public void execute() {
@@ -249,7 +249,7 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     protected FunctionParameterEditor createNumberInputWidget(final List paramList, final int paramIndex) {
-        final NumberParameterEditor input = beanManager.lookupBean(NumberParameterEditor.class).newInstance();
+        final NumberParameterEditor input = parameterEditorProvider.select(NumberParameterEditor.class).get();
         input.setValue(Double.parseDouble(paramList.get(paramIndex).toString()));
         input.setOnChangeCommand(new Command() {
             public void execute() {
@@ -261,7 +261,7 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     protected FunctionParameterEditor createTextInputWidget(final List paramList, final int paramIndex) {
-        final TextParameterEditor input = beanManager.lookupBean(TextParameterEditor.class).newInstance();
+        final TextParameterEditor input = parameterEditorProvider.select(TextParameterEditor.class).get();
         input.setValue((String) paramList.get(paramIndex));
         input.setOnChangeCommand(new Command() {
             public void execute() {
@@ -273,7 +273,7 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     protected FunctionParameterEditor createMultipleNumberInputWidget(final List paramList) {
-        final MultipleNumberParameterEditor input = beanManager.lookupBean(MultipleNumberParameterEditor.class).newInstance();
+        final MultipleNumberParameterEditor input = parameterEditorProvider.select(MultipleNumberParameterEditor.class).get();
         input.setValues(paramList);
         input.setOnChangeCommand(new Command() {
             public void execute() {
@@ -284,7 +284,7 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     protected FunctionParameterEditor createMultipleTextInputWidget(final List paramList) {
-        final MultipleTextParameterEditor input = beanManager.lookupBean(MultipleTextParameterEditor.class).newInstance();
+        final MultipleTextParameterEditor input = parameterEditorProvider.select(MultipleTextParameterEditor.class).get();
         input.setValues(paramList);
         input.setOnChangeCommand(new Command() {
             public void execute() {
@@ -297,7 +297,7 @@ public class ColumnFilterEditor implements IsWidget {
     protected FunctionParameterEditor createTimeFrameWidget(final List paramList, final int paramIndex) {
         TimeFrame timeFrame = TimeFrame.parse((String) paramList.get(paramIndex));
 
-        final TimeFrameEditor input = beanManager.lookupBean(TimeFrameEditor.class).newInstance();
+        final TimeFrameEditor input = parameterEditorProvider.select(TimeFrameEditor.class).get();
         input.init(timeFrame, new Command() {
             public void execute() {
                 paramList.set(paramIndex, input.getTimeFrame().toString());
@@ -308,7 +308,7 @@ public class ColumnFilterEditor implements IsWidget {
     }
 
     protected FunctionParameterEditor createLikeToFunctionWidget(final CoreFunctionFilter coreFilter) {
-        final LikeToFunctionEditor input = beanManager.lookupBean(LikeToFunctionEditor.class).newInstance();
+        final LikeToFunctionEditor input = parameterEditorProvider.select(LikeToFunctionEditor.class).get();
         final List paramList = coreFilter.getParameters();
         String pattern = (String) paramList.get(0);
         boolean caseSensitive = paramList.size() < 2 || Boolean.parseBoolean(paramList.get(1).toString());
